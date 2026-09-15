@@ -4,7 +4,7 @@ import argparse
 import json
 from pathlib import Path
 
-from weldvision.data.mendeley import download_file, list_root_files
+from weldvision.data.mendeley import download_file, list_root_files, safe_filename
 
 
 def main() -> int:
@@ -34,7 +34,7 @@ def main() -> int:
 
     records = []
     for remote in files:
-        destination = args.out / remote.name
+        destination = args.out / safe_filename(remote.name)
         records.append(download_file(remote, destination))
 
     args.manifest.parent.mkdir(parents=True, exist_ok=True)
