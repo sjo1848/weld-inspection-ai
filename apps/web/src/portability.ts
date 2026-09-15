@@ -9,7 +9,10 @@ if (!output || !runButton) {
   throw new Error('Portability probe DOM is incomplete')
 }
 
-runButton.addEventListener('click', () => {
+const outputElement = output
+const runButtonElement = runButton
+
+runButtonElement.addEventListener('click', () => {
   void runProbe()
 })
 
@@ -60,5 +63,5 @@ async function runProbe(): Promise<void> {
 }
 
 function setOutput(value: unknown): void {
-  output.textContent = JSON.stringify(value, null, 2)
+  outputElement.textContent = JSON.stringify(value, null, 2)
 }
