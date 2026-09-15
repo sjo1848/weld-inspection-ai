@@ -1,6 +1,6 @@
 # B1 — Dataset Audit and Split Evidence
 
-Status: **PARTIAL — source acquisition unresolved; split defect confirmed**
+Status: **PARTIAL — canonical structure/leakage directly audited; test annotation + archive SHA still required**
 
 ## Canonical source
 
@@ -14,79 +14,141 @@ Mendeley Data: *Annotated Image Dataset for Shielded Metal Arc Welding (SMAW) Su
 - License: CC BY 4.0
 - Public record: `https://data.mendeley.com/datasets/f7j76vz53p/1`
 
-The canonical Mendeley description reports 71 original 3456×3456 smartphone photographs, three defect classes, resizing to 640×640, tiling, 448 processed samples and an 80:20 processed-image train/test split.
+The deposit reports 71 original smartphone photographs, three target classes and 448 processed 640×640 tiles.
 
-## Secondary independent conversion/audit evidence
+## Canonical local evidence received 2026-09-15
 
-The public dataset card `AI4Manufacturing/217` on Hugging Face documents a provenance-preserving conversion of this Mendeley deposit. It is secondary evidence, not a replacement canonical source.
+The project now has user-supplied evidence derived from the downloaded Mendeley archive:
 
-Its audit reports:
+- complete `unzip -l` archive listing;
+- complete extracted-file listing;
+- canonical `train/train_fold_1/_annotations.coco.json`;
+- local confirmation that the original archive is retained outside Git because it is about 1.1 GB.
 
-- 448 distinct processed tile records;
-- 717 deduplicated object annotations;
-- `spatter`: 417 annotations;
-- `undercut`: 162 annotations;
-- `slag inclusion`: 138 annotations;
-- every retained tile contains at least one target defect;
-- the Roboflow category `weld-defect-det` is a super-category placeholder with no emitted annotations;
-- the 71 original source photographs are not distributed in the deposit; source-photo identity was reconstructed from filenames;
-- the authors' processed-image split has severe source-photo leakage: train contains tiles from 70 source photographs, test from 47, with **46 source photographs shared** between train and test;
-- the secondary audit's corrected photograph-wise split uses 57 source photographs / 364 tiles for train and 14 source photographs / 84 tiles for test, with zero shared source photographs and all three classes represented in test.
+Input identities captured by the project audit:
 
-This independently confirms the leakage risk already identified during Design. The original published split must not be treated as reliable held-out generalization evidence for this project.
+- archive-listing SHA-256: `fe15a3c74dee65fcd0d4821e0b92c02a69ea00502ba82a7c4ad3cdd524fd3c9f`;
+- extracted-file-list SHA-256: `35adfa39453b1c33c24c904261c8c4ab336b6a4f647e2dd58c34716d7ddfef2a`;
+- `train_fold_1` COCO SHA-256: `bdb8abed1099631ead7a5bda65e0f617cd63540407ec8ed16ada35188c48530a`.
 
-## Negative/background coverage finding
+The `train_fold_1` JSON is byte-size matched to the archive listing at `1,416,530` bytes.
 
-Because all 448 retained tiles contain at least one target defect, the canonical dataset alone provides no true negative/background weld tiles for measuring defect-presence false positives.
+## Archive structure — directly audited
 
-Consequences for the MVP:
+The archive listing contains:
 
-1. The detector may still be trained for localization/classification of the three supported defect classes.
-2. “No supported anomaly detected” behavior cannot be validated credibly from this dataset alone.
-3. B3/B7 must add legitimate negative/background weld photographs or use an independently captured phone-image sanity set containing negative/ambiguous cases.
-4. No accuracy claim may silently imply validated defect absence detection.
+- `18,001` entries;
+- `1,157,926,436` uncompressed bytes;
+- `17,990` image files;
+- `11` COCO annotation JSON files;
+- `90` test images;
+- five train folds of `2,864` images each;
+- five validation folds of `716` images each.
 
-## Source acquisition status
+For every fold pair, train + validation therefore contains `3,580` augmented images.
 
-Repository tooling exists for acquisition, SHA-256 manifests and COCO audits. However, the previously used unauthenticated Mendeley endpoint
+## Augmentation lineage — directly audited
 
-`https://data.mendeley.com/public-api/datasets/f7j76vz53p/files?folder_id=root&version=1`
+Filename lineage reconstruction shows that each fold pair contains exactly `358` base train tile lineages and exactly `10` variants per base tile:
 
-returned HTTP **403** from GitHub Actions on 2026-09-15. This is classified as an external source/API acquisition issue, not a product failure and not a Human Gate.
+- `orig`
+- `Original`
+- `Flip_H`
+- `Flip_V`
+- `Rotate_90_CW`
+- `Rotate_90_CCW`
+- `Rotate_180`
+- `Grayscale`
+- `Color_Jitter`
+- `Blur`
 
-The Hugging Face converted copy is useful for public audit metadata, but its file access is gated and therefore is not currently accepted as the project's reproducible raw-byte acquisition channel.
+This means augmentation occurred before/around the published cross-validation partition rather than being confined to the training side of a source-independent split.
 
-## Split policy
+## Source-photo leakage — now canonical, not merely secondary
 
-The project requires a source-photo-aware split:
+Source-photo identity can be reconstructed from the filenames by removing the augmentation prefix and Roboflow `_jpg.rf.<hash>` suffix while retaining the camera basename.
 
-1. Recover source photograph identity from filename metadata or an explicit mapping.
-2. Assign complete source-photograph groups to train/validation/test before augmentation.
-3. Apply augmentation only after group assignment and only to training data.
-4. Verify zero source groups shared across partitions.
-5. Persist a deterministic split manifest with source identity, tile identity and partition.
-6. Preserve the original authors' assignment only as provenance metadata, not as the project's validation split.
+Direct analysis of the canonical file listing yields:
 
-The 57/14 photograph-wise split reported by the secondary audit is evidence that a zero-leak grouping is feasible, but this repository must reconstruct and verify its own manifest from acquired source bytes/metadata before promoting it as execution evidence.
+- `71` source-photo identities total;
+- `47` source-photo identities in published test;
+- `70` source-photo identities on the published train side;
+- `46 / 47` published test source photos also occur on train (`97.9%`).
 
-## Existing repository tooling
+Therefore the originally published test split is **not source-photo independent**.
 
-```bash
-python ml/scripts/download_dataset.py --list-only
-python ml/scripts/download_dataset.py
-python ml/scripts/audit_dataset.py <extracted-dataset-root>
-```
+The five train/validation fold pairs are also heavily leaked:
 
-The downloader validates HTTPS URLs and safe filenames and records SHA-256 integrity metadata. Raw bytes stay outside Git.
+| Fold | Train source photos | Val source photos | Shared source photos | Shared base tile lineages |
+| --- | ---: | ---: | ---: | ---: |
+| 1 | 70 | 69 | 69 | 329 |
+| 2 | 70 | 68 | 68 | 319 |
+| 3 | 70 | 70 | 70 | 320 |
+| 4 | 70 | 70 | 70 | 322 |
+| 5 | 70 | 70 | 70 | 314 |
+
+The original cross-validation metrics therefore cannot be treated as independent held-out evidence for this project.
+
+## Canonical train-fold annotation audit
+
+`train_fold_1/_annotations.coco.json` contains:
+
+- `2,864` images;
+- `4,545` object annotations;
+- `0` images without an annotation;
+- `slag inclusion`: `870`;
+- `spatter`: `2,576`;
+- `undercut`: `1,099`;
+- category `0`, `weld-defect-det`, is an unused placeholder.
+
+All `358` base train tile lineages occur in this fold. Across the observed augmented variants of each lineage, the category multiset is invariant.
+
+Collapsing to one representative per base train tile yields:
+
+- `358` base tiles;
+- `568` object annotations;
+- `slag inclusion`: `107`;
+- `spatter`: `326`;
+- `undercut`: `135`.
+
+This directly confirms there are no true negative/background images in the audited train-fold annotation set.
+
+## Secondary audit comparison
+
+The earlier independent public derivative reported `448` unique processed tiles and `717` deduplicated annotations total, with no negative tiles. The direct canonical findings above agree with its lineage/leakage conclusions but no longer rely on that derivative for the source-photo overlap claim.
+
+The project still requires the canonical test annotation JSON before promoting the exact full-dataset annotation totals as project-owned evidence.
+
+## Required project split policy
+
+The project will not use the authors' published split for trustworthy model evaluation.
+
+The project split must:
+
+1. reconstruct source-photo identity from filenames;
+2. assign complete source-photo groups to train/validation/test before augmentation;
+3. keep all derivatives of a base tile in the same partition;
+4. apply/retain augmentation only on the training partition for model fitting;
+5. verify zero source-photo and zero base-lineage overlap across partitions;
+6. persist the deterministic split manifest;
+7. reserve an independent negative/background phone sanity set for no-defect behavior.
+
+## Machine-readable checkpoint
+
+`data/manifests/b1-canonical-listing-audit.json` stores the direct structure, lineage, leakage and `train_fold_1` annotation findings above.
 
 ## B1 exit conditions still open
 
-- obtain the canonical/traceable dataset bytes through a reproducible accessible channel;
-- persist exact file names, sizes and SHA-256 hashes;
-- inspect the actual COCO annotation layout;
-- reproduce/determine exact class and annotation counts from the acquired bytes;
-- reconstruct source-photo grouping from the acquired material;
-- generate and verify a deterministic zero-leak train/validation/test manifest;
-- document negative/background supplementation for downstream evaluation.
+Only two small canonical inputs are now required from the retained local archive before the project can finish the data basis:
 
-Until these items exist, B1 remains **PARTIAL** and no model-quality metric may be promoted as trustworthy held-out evidence.
+1. `test/_annotations.coco.json` — archive listing size `211,785` bytes;
+2. SHA-256 of the original downloaded ZIP archive.
+
+After those arrive, the project can:
+
+- calculate exact 448-tile project-owned class/annotation totals;
+- freeze the canonical archive identity;
+- generate the source-photo-aware zero-leak split manifest;
+- close B1 data integrity sufficiently to start bounded B3 training.
+
+B3 remains blocked until those data-basis items are closed. This is a `HUMAN_ACTION`, not a new Human Gate.
