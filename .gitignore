@@ -21,6 +21,7 @@ artifacts/models/*.pt
 artifacts/models/*.pth
 artifacts/models/*.onnx
 artifacts/checkpoints/
+apps/web/public/models/*.onnx
 runs/
 
 # Environment / secrets
