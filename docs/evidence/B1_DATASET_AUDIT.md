@@ -1,6 +1,6 @@
 # B1 — Dataset Audit and Split Evidence
 
-Status: **PARTIAL — source-level file audit pending download**
+Status: **PARTIAL — source acquisition unresolved; split defect confirmed**
 
 ## Canonical source
 
@@ -14,65 +14,79 @@ Mendeley Data: *Annotated Image Dataset for Shielded Metal Arc Welding (SMAW) Su
 - License: CC BY 4.0
 - Public record: `https://data.mendeley.com/datasets/f7j76vz53p/1`
 
-## Publisher-reported structure
+The canonical Mendeley description reports 71 original 3456×3456 smartphone photographs, three defect classes, resizing to 640×640, tiling, 448 processed samples and an 80:20 processed-image train/test split.
 
-The Mendeley record reports:
+## Secondary independent conversion/audit evidence
 
-- 71 original high-resolution source images (`3456×3456`).
-- Smartphone capture at fixed distance/orientation and controlled lighting.
-- Three surface-anomaly classes: `spatter`, `slag inclusion`, `undercut`.
-- Polygon/bounding-box annotations produced through Roboflow and reviewed from source images by a certified welding inspector.
-- Source images were resized to `640×640` and tiled, producing 448 processed samples with COCO-format annotations.
-- Publisher split: 358 train / 90 test processed images.
-- The training subset was augmented to 3,580 samples and later used for five-fold cross-validation.
+The public dataset card `AI4Manufacturing/217` on Hugging Face documents a provenance-preserving conversion of this Mendeley deposit. It is secondary evidence, not a replacement canonical source.
 
-## Provenance cross-check
+Its audit reports:
 
-A public Roboflow Universe project by the same contributor, `preprocessing-skripsi-dataset-weld-defect`, reports 71 images, the same three classes, object-detection task type, and CC BY 4.0 licensing:
+- 448 distinct processed tile records;
+- 717 deduplicated object annotations;
+- `spatter`: 417 annotations;
+- `undercut`: 162 annotations;
+- `slag inclusion`: 138 annotations;
+- every retained tile contains at least one target defect;
+- the Roboflow category `weld-defect-det` is a super-category placeholder with no emitted annotations;
+- the 71 original source photographs are not distributed in the deposit; source-photo identity was reconstructed from filenames;
+- the authors' processed-image split has severe source-photo leakage: train contains tiles from 70 source photographs, test from 47, with **46 source photographs shared** between train and test;
+- the secondary audit's corrected photograph-wise split uses 57 source photographs / 364 tiles for train and 14 source photographs / 84 tiles for test, with zero shared source photographs and all three classes represented in test.
 
-`https://universe.roboflow.com/mubessirul-ummah/preprocessing-skripsi-dataset-weld-defect`
+This independently confirms the leakage risk already identified during Design. The original published split must not be treated as reliable held-out generalization evidence for this project.
 
-This is useful provenance evidence, but it is **not independent validation** of the Mendeley dataset. The overlapping contributor, class set and 71-image count are consistent with common lineage.
+## Negative/background coverage finding
 
-## Material validity risk: source-image leakage
+Because all 448 retained tiles contain at least one target defect, the canonical dataset alone provides no true negative/background weld tiles for measuring defect-presence false positives.
 
-The 448 processed samples are derived from only 71 original images through resizing/tiling. A random tile-level train/test split can place visually adjacent crops from the same source specimen in both partitions, making measured generalization materially optimistic.
+Consequences for the MVP:
 
-Therefore the project does **not** accept the publisher's 80:20 processed-image split as sufficient evidence until file-level provenance is audited.
+1. The detector may still be trained for localization/classification of the three supported defect classes.
+2. “No supported anomaly detected” behavior cannot be validated credibly from this dataset alone.
+3. B3/B7 must add legitimate negative/background weld photographs or use an independently captured phone-image sanity set containing negative/ambiguous cases.
+4. No accuracy claim may silently imply validated defect absence detection.
 
-Required split policy:
+## Source acquisition status
 
-1. Reconstruct original source/specimen identity from filenames or an explicit mapping when available.
-2. Group train/validation/test by original source before augmentation.
-3. Apply augmentation only to training data after the group split.
-4. If grouping cannot be reconstructed, label internal metrics as potentially optimistic and supplement them with independently captured phone images.
+Repository tooling exists for acquisition, SHA-256 manifests and COCO audits. However, the previously used unauthenticated Mendeley endpoint
 
-## Negative/background coverage
+`https://data.mendeley.com/public-api/datasets/f7j76vz53p/files?folder_id=root&version=1`
 
-Publisher metadata does not establish how many processed images contain no target annotations. This is a required B1 audit item because a detector evaluated only on positive defect crops can have poorly measured false-positive behavior.
+returned HTTP **403** from GitHub Actions on 2026-09-15. This is classified as an external source/API acquisition issue, not a product failure and not a Human Gate.
 
-The repository's `audit_dataset.py` reports the number of COCO images with zero annotations once the source archive is downloaded.
+The Hugging Face converted copy is useful for public audit metadata, but its file access is gated and therefore is not currently accepted as the project's reproducible raw-byte acquisition channel.
 
-## Reproducible acquisition/audit path
+## Split policy
+
+The project requires a source-photo-aware split:
+
+1. Recover source photograph identity from filename metadata or an explicit mapping.
+2. Assign complete source-photograph groups to train/validation/test before augmentation.
+3. Apply augmentation only after group assignment and only to training data.
+4. Verify zero source groups shared across partitions.
+5. Persist a deterministic split manifest with source identity, tile identity and partition.
+6. Preserve the original authors' assignment only as provenance metadata, not as the project's validation split.
+
+The 57/14 photograph-wise split reported by the secondary audit is evidence that a zero-leak grouping is feasible, but this repository must reconstruct and verify its own manifest from acquired source bytes/metadata before promoting it as execution evidence.
+
+## Existing repository tooling
 
 ```bash
-python -m pip install -e '.[dev]'
 python ml/scripts/download_dataset.py --list-only
 python ml/scripts/download_dataset.py
-# extract source archives while preserving the raw download manifest
 python ml/scripts/audit_dataset.py <extracted-dataset-root>
 ```
 
-Raw files are intentionally excluded from Git. Download integrity metadata is written to `data/manifests/mendeley-download.json` and is intended to be versioned after execution.
+The downloader validates HTTPS URLs and safe filenames and records SHA-256 integrity metadata. Raw bytes stay outside Git.
 
 ## B1 exit conditions still open
 
-- exact root file names/sizes/hashes from the Mendeley public API;
-- exact COCO annotation file layout;
-- annotation instance count per class;
-- number of background/negative images;
-- filename/source-image grouping feasibility;
-- durable group-aware split manifest;
-- explicit leakage statement based on downloaded files.
+- obtain the canonical/traceable dataset bytes through a reproducible accessible channel;
+- persist exact file names, sizes and SHA-256 hashes;
+- inspect the actual COCO annotation layout;
+- reproduce/determine exact class and annotation counts from the acquired bytes;
+- reconstruct source-photo grouping from the acquired material;
+- generate and verify a deterministic zero-leak train/validation/test manifest;
+- document negative/background supplementation for downstream evaluation.
 
-Until those items exist, B1 remains **PARTIAL** and no model-quality metric may be promoted as reliable evidence.
+Until these items exist, B1 remains **PARTIAL** and no model-quality metric may be promoted as trustworthy held-out evidence.

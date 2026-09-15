@@ -56,3 +56,49 @@ jobs:
 
       - name: Build web workspace
         run: pnpm web:build
+
+  b2-portability:
+    name: B2 YOLOX-Nano ORT Web/WASM portability
+    needs: bootstrap
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Checkout exact candidate
+        uses: actions/checkout@v7
+
+      - name: Set up Node 20
+        uses: actions/setup-node@v6
+        with:
+          node-version: '20'
+          package-manager-cache: false
+
+      - name: Activate pinned pnpm
+        run: |
+          corepack enable
+          corepack prepare pnpm@10.15.1 --activate
+          pnpm --version
+
+      - name: Install web dependencies
+        run: pnpm install --no-frozen-lockfile
+
+      - name: Acquire official YOLOX-Nano ONNX reference artifact
+        env:
+          MODEL_URL: https://github.com/Megvii-BaseDetection/YOLOX/releases/download/0.1.1rc0/yolox_nano.onnx
+          EXPECTED_BYTES: '3659407'
+        run: |
+          mkdir -p apps/web/public/models
+          curl -L --fail --retry 3 --retry-delay 2 "$MODEL_URL" \
+            --output apps/web/public/models/yolox_nano-coco-ref.onnx
+          ACTUAL_BYTES="$(stat -c%s apps/web/public/models/yolox_nano-coco-ref.onnx)"
+          echo "B2_MODEL_BYTES=$ACTUAL_BYTES"
+          test "$ACTUAL_BYTES" = "$EXPECTED_BYTES"
+          echo "B2_MODEL_SHA256=$(sha256sum apps/web/public/models/yolox_nano-coco-ref.onnx | cut -d' ' -f1)"
+
+      - name: Build multi-page portability candidate
+        run: pnpm web:build
+
+      - name: Verify system Chrome
+        run: google-chrome --version
+
+      - name: Execute browser portability proof
+        run: pnpm --filter @weld-inspection-ai/web test:portability
