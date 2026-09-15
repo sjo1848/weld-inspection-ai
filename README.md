@@ -65,7 +65,7 @@ pnpm web:typecheck
 pnpm web:build
 ```
 
-The web source is introduced later in the risk-first Build sequence; until then only the workspace/runtime dependency contract is present.
+A minimal Vue/Vite application shell already exists so the browser toolchain can be verified early. The actual image/inference/result journey is intentionally deferred until the model/runtime path has evidence, following the risk-first Build sequence.
 
 ## Build sequence
 
