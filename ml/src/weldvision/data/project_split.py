@@ -106,7 +106,8 @@ def materialize_project_split(
             split_name = source_to_split.get(source_id)
             if split_name is None:
                 raise ValueError(
-                    f"Source photo {source_id!r} from {source.name} is absent from the frozen manifest"
+                    f"Source photo {source_id!r} from {source.name} is absent "
+                    "from the frozen manifest"
                 )
 
             image_id = int(image["id"])
