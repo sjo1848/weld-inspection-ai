@@ -4,6 +4,7 @@ import hashlib
 from dataclasses import dataclass
 from pathlib import Path
 from typing import Any
+from urllib.parse import urlparse
 
 import requests
 
@@ -44,6 +45,7 @@ def list_root_files(
         download_url = details.get("download_url")
         if not download_url:
             continue
+        _validate_https_url(str(download_url))
         files.append(
             RemoteFile(
                 file_id=str(item.get("id") or ""),
@@ -55,6 +57,17 @@ def list_root_files(
     return files
 
 
+def safe_filename(name: str) -> str:
+    """Return a basename suitable for writing under the configured dataset directory."""
+    normalized = name.replace("\\", "/")
+    basename = Path(normalized).name
+    if not basename or basename in {".", ".."}:
+        raise ValueError(f"Unsafe remote filename: {name!r}")
+    if basename != normalized:
+        raise ValueError(f"Remote filename must not contain a path: {name!r}")
+    return basename
+
+
 def download_file(
     remote: RemoteFile,
     destination: Path,
@@ -62,6 +75,7 @@ def download_file(
     chunk_size: int = 1024 * 1024,
 ) -> dict[str, Any]:
     """Stream one dataset file and return durable integrity metadata."""
+    _validate_https_url(remote.download_url)
     destination.parent.mkdir(parents=True, exist_ok=True)
     digest = hashlib.sha256()
     written = 0
@@ -88,6 +102,12 @@ def download_file(
         "size_bytes": written,
         "sha256": digest.hexdigest(),
     }
+
+
+def _validate_https_url(url: str) -> None:
+    parsed = urlparse(url)
+    if parsed.scheme != "https" or not parsed.netloc:
+        raise ValueError(f"Dataset download URL must be HTTPS: {url!r}")
 
 
 def _optional_int(value: object) -> int | None:
