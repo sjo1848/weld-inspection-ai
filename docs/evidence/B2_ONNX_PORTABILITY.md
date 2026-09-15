@@ -1,53 +1,87 @@
 # B2 — YOLOX-Nano ONNX Browser Portability Evidence
 
-Status: **RUNNING — bounded browser proof configured; execution pending current candidate**
+Status: **TECHNICAL PASS — reference graph / WASM browser path**
 
-## Question this increment answers
+## Candidate identity
+
+- Build branch: `build/mvp-v0.1`
+- Candidate commit: `988ccb5458de6a94c1ab960a4bb839063c8c5fdd`
+- GitHub Actions run: `34927649777`
+- B2 job: `104249134650`
+- Job result: **SUCCESS**
+- Browser: Google Chrome `152.0.7977.82` on Ubuntu 24.04 GitHub-hosted runner
+
+## Question answered
 
 Can the approved primary architecture family, YOLOX-Nano exported as ONNX, load and execute entirely in a real browser through ONNX Runtime Web using the required WebAssembly compatibility baseline?
 
-This is a portability test only. It does **not** measure welding-defect model quality.
+**Yes, for the official YOLOX-Nano reference graph.**
 
-## Reference artifact
+This is a portability proof only. It does **not** measure welding-defect model quality and does not promote this COCO model as the task model.
+
+## Reference artifact identity
 
 Official YOLOX project release:
 
 - repository: `Megvii-BaseDetection/YOLOX`
 - release tag: `0.1.1rc0`
 - artifact: `yolox_nano.onnx`
-- published asset size: `3,659,407` bytes
-- reference input used by this probe: `1×3×416×416`, float32
-- download source: official GitHub release asset
+- exact downloaded size: `3,659,407` bytes
+- SHA-256: `c789161ed43c8269fcd4e67c67eeeb4e80c622da2eb296a20bc6007bd18a0b7d`
+- input used by probe: float32 `1×3×416×416`
 
-The reference graph is COCO-pretrained. It is never presented as the welding task model. Its sole role is proving that the selected model family/runtime boundary is viable before spending compute on task-specific fine-tuning.
+The CI job downloaded the artifact directly from the official GitHub release and verified the exact published byte size before execution. The binary remains ephemeral and is not committed to Git.
 
-## Browser proof
+## Real-browser execution result
 
-The repository now provides:
+Playwright launched system Chrome against the production Vite preview and forced ONNX Runtime Web to the `wasm` provider.
 
-- `apps/web/portability.html` — development-only probe surface;
-- `apps/web/src/portability.ts` — deterministic zero-tensor inference probe;
-- `apps/web/src/ml/runtime.ts` — runtime selection with `auto`, forced `wasm`, or forced `webgpu` modes;
-- multi-page Vite production build including the probe;
-- Playwright test forcing the `wasm` provider in system Chrome;
-- bounded GitHub Actions job that downloads the official model, verifies its byte size, records SHA-256, builds the production bundle, and runs the real browser inference proof.
+Captured result:
 
-## B2 PASS conditions
+```json
+{
+  "status": "PASS",
+  "requestedProvider": "wasm",
+  "provider": "wasm",
+  "warnings": [],
+  "inputName": "images",
+  "inputShape": [1, 3, 416, 416],
+  "outputNames": ["output"],
+  "outputs": {
+    "output": {
+      "type": "float32",
+      "dims": [1, 3549, 85]
+    }
+  },
+  "elapsedMs": 309.3
+}
+```
 
-The reference graph must, in one bounded CI execution:
+The 309.3 ms measurement is a CI-runner smoke-test latency only. It is **not** a mobile performance claim.
 
-1. download from the official YOLOX GitHub release;
-2. match the published 3,659,407-byte artifact size;
-3. produce a captured SHA-256 identity;
-4. be included only as an ephemeral CI/public build artifact, not committed to Git;
-5. load through ONNX Runtime Web with the provider forced to `wasm`;
-6. accept the expected `1×3×416×416` float32 input;
-7. execute one inference in system Chrome without runtime/operator failure;
-8. expose at least one output tensor and record its names/shapes;
-9. leave WebGPU as an optional optimization rather than a correctness dependency.
+## Proven properties
 
-## Interpretation
+- official YOLOX-Nano ONNX artifact is retrievable and identity-pinned;
+- Vite produces the multi-page portability candidate;
+- ONNX Runtime Web initializes with WebAssembly in real Chrome;
+- the graph accepts the expected `images` tensor shape;
+- one full inference executes without operator/runtime failure;
+- output contract for this reference graph is `output: float32[1,3549,85]`;
+- WebGPU is not required for correctness and remains an optional optimization.
 
-PASS proves the YOLOX-Nano ONNX family is compatible with the browser/WASM architecture at reference-graph level. A later promoted weld model must still repeat export/parity/browser checks because fine-tuning/export choices can change graph details.
+## Delivery-size finding
 
-FAIL is an implementation/portability defect to debug autonomously. Only material failure of both the primary YOLOX path and the pre-approved SSDLite fallback can trigger the model-strategy Human Gate defined by `WV-TC-BUILD-001`.
+The same production build emitted an ONNX Runtime Web WASM asset of approximately **26.8 MB** (`ort-wasm-simd-threaded.asyncify...wasm`). Cloudflare Workers Static Assets currently limit an individual static asset to **25 MiB**.
+
+Therefore B6 must not assume this exact ORT WASM artifact can be uploaded unchanged as a Workers Static Asset. The approved architecture already permits an asset-delivery seam, so the implementation must choose one evidence-backed zero-cost option before deployment, such as:
+
+1. reduce/select a smaller ORT Web WASM build while preserving the required fallback behavior; or
+2. deliver the oversized runtime artifact through R2/CDN while keeping application inference entirely client-side.
+
+This is a delivery implementation constraint, not a model-strategy Human Gate and not a failure of B2 browser portability.
+
+## Remaining boundary
+
+A task-specific weld detector must repeat export identity, Python→ONNX parity and browser runtime checks during B4. Fine-tuning/export can alter graph operators, inputs or outputs; the reference PASS cannot be inherited automatically.
+
+Independent critic/integration assurance remains required before the full Build vertical slice is declared complete.
