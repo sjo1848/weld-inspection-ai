@@ -8,7 +8,9 @@ from weldvision.data.mendeley import download_file, list_root_files, safe_filena
 
 
 def main() -> int:
-    parser = argparse.ArgumentParser(description="Download the public WELD-VISION-001 source dataset")
+    parser = argparse.ArgumentParser(
+        description="Download the public WELD-VISION-001 source dataset"
+    )
     parser.add_argument("--out", type=Path, default=Path("data/raw/mendeley"))
     parser.add_argument(
         "--manifest",

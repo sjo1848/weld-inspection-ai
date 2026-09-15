@@ -91,7 +91,7 @@ def download_file(
                 written += len(chunk)
 
     if remote.size_bytes is not None and written != remote.size_bytes:
-        raise IOError(
+        raise OSError(
             f"Downloaded byte count mismatch for {remote.name}: expected "
             f"{remote.size_bytes}, got {written}"
         )

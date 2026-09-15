@@ -12,7 +12,11 @@ def audit_coco(annotation_file: Path) -> dict[str, Any]:
     annotations = payload.get("annotations") or []
     categories = payload.get("categories") or []
 
-    if not isinstance(images, list) or not isinstance(annotations, list) or not isinstance(categories, list):
+    if (
+        not isinstance(images, list)
+        or not isinstance(annotations, list)
+        or not isinstance(categories, list)
+    ):
         raise ValueError(f"Invalid COCO structure in {annotation_file}")
 
     category_names = {

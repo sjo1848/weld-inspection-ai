@@ -44,10 +44,10 @@ async function runProbe(): Promise<void> {
       inputShape,
       outputNames: runtime.session.outputNames,
       outputs: Object.fromEntries(
-        Object.entries(results).map(([name, tensor]) => [
-          name,
-          { type: tensor.type, dims: tensor.dims },
-        ]),
+        Object.entries(results).map(([name, value]) => {
+          const tensor = value as ort.Tensor
+          return [name, { type: tensor.type, dims: tensor.dims }]
+        }),
       ),
       elapsedMs: Math.round(elapsedMs * 100) / 100,
     })
