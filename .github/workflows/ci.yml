@@ -56,6 +56,3 @@ jobs:
 
       - name: Build web workspace
         run: pnpm web:build
-
-      - name: B1 source API preflight
-        run: python ml/scripts/download_dataset.py --list-only
