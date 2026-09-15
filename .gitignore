@@ -1,0 +1,34 @@
+# Python
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.ruff_cache/
+.venv/
+dist/
+build/
+*.egg-info/
+
+# Node
+node_modules/
+.pnpm-store/
+apps/web/dist/
+
+# ML/data artifacts (provenance manifests stay versioned; raw data and weights do not)
+data/raw/
+data/interim/
+data/processed/
+artifacts/models/*.pt
+artifacts/models/*.pth
+artifacts/models/*.onnx
+artifacts/checkpoints/
+runs/
+
+# Environment / secrets
+.env
+.env.*
+!.env.example
+
+# Editors / OS
+.vscode/
+.idea/
+.DS_Store
