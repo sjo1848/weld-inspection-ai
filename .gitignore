@@ -4,6 +4,7 @@ __pycache__/
 .pytest_cache/
 .ruff_cache/
 .venv/
+.venv*/
 dist/
 build/
 *.egg-info/
@@ -17,12 +18,22 @@ apps/web/dist/
 data/raw/
 data/interim/
 data/processed/
+data/materialized/
+data/yolox/
 artifacts/models/*.pt
 artifacts/models/*.pth
 artifacts/models/*.onnx
 artifacts/checkpoints/
 apps/web/public/models/*.onnx
 runs/
+
+# Canonical dataset bytes and local inspection/materialization handoffs
+Annotated-Image-Dataset-for-Shielded-Metal-Arc-Wel.zip
+weld-dataset/
+contenido.txt
+dataset-files.txt
+dataset-sha256.txt
+weld-v0.1-materialized.tar.gz
 
 # Environment / secrets
 .env
