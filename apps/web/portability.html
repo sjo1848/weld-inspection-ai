@@ -1,0 +1,20 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Weld Inspection AI — ONNX Portability Probe</title>
+  </head>
+  <body>
+    <main>
+      <h1>ONNX portability probe</h1>
+      <p>
+        Development-only surface. It verifies that a fixed YOLOX-Nano ONNX graph can load and execute
+        through ONNX Runtime Web. It does not evaluate weld defects or model quality.
+      </p>
+      <button id="run" type="button">Run probe</button>
+      <pre id="output">{"status":"idle"}</pre>
+    </main>
+    <script type="module" src="/src/portability.ts"></script>
+  </body>
+</html>
