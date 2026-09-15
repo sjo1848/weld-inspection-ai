@@ -1,0 +1,10 @@
+{
+  "name": "weld-inspection-ai",
+  "private": true,
+  "version": "0.1.0",
+  "scripts": {
+    "web:dev": "pnpm --filter @weld-inspection-ai/web dev",
+    "web:build": "pnpm --filter @weld-inspection-ai/web build",
+    "web:typecheck": "pnpm --filter @weld-inspection-ai/web typecheck"
+  }
+}
