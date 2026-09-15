@@ -2,6 +2,10 @@
   "name": "weld-inspection-ai",
   "private": true,
   "version": "0.1.0",
+  "packageManager": "pnpm@10.15.1",
+  "engines": {
+    "node": ">=20 <23"
+  },
   "scripts": {
     "web:dev": "pnpm --filter @weld-inspection-ai/web dev",
     "web:build": "pnpm --filter @weld-inspection-ai/web build",
