@@ -1,230 +1,127 @@
 # B3 Free-GPU Handoff — WELD-VISION-001
 
-Status: ACTIVE HANDOFF
-Date: 2026-09-15
+Status: ACTIVE / RESUMABLE COLAB PATH
+Updated: 2026-09-17
 Scope: offline YOLOX-Nano transfer-learning execution only
 
-## Why this exists
+## Current position
 
-The project owner's local machine completed deterministic data preparation but does not expose an NVIDIA/CUDA training path (`nvidia-smi` is unavailable). CPU training is intentionally not used. This is a compute-location constraint, not a product-architecture change and not a Human Gate.
+Local deterministic data preparation is complete, but the project owner's machine has no NVIDIA/CUDA training path. Colab Free exposed a T4 GPU, but the original notebook treated the 80-epoch candidate as one all-or-nothing run. The user reports that the Colab execution was cancelled for excess runtime before evidence packaging completed.
 
-## Frozen evidence entering the handoff
+This is not evidence of a model-quality failure. It is an execution-resilience failure in the original handoff: checkpoints lived only in the ephemeral Colab filesystem and the final evidence bundle was created only after all 80 epochs completed.
+
+The handoff is now changed to a resumable design.
+
+## Frozen project invariants
 
 - Branch: `build/mvp-v0.1`
-- Validated training-prep head before this handoff: `8f023a00288b8efa6b41ad8fcdb1bc86038347d1`
-- CI #26: SUCCESS
-- Python used locally: 3.11.16
-- Materialized dataset: `data/materialized/weld-v0.1`
-- Strict YOLOX layout: `data/yolox/weld-v0.1`
-- Train: 358 images
-- Validation: 45 images
-- Frozen test: 45 images
+- Dataset split: train 358 / validation 45 / frozen test 45
 - Classes: `slag inclusion`, `spatter`, `undercut`
-- Compact training handoff: `weld-v0.1-materialized.tar.gz` (~28 MB)
-- Local hardware outcome: `HARDWARE_BLOCKER`
-- Torch/CUDA/GPU/VRAM/checkpoints/metrics: UNKNOWN until external GPU execution
+- Source-photo overlap across project partitions: 0
+- Compact input: `weld-v0.1-materialized.tar.gz` (~28 MB)
+- Primary model: YOLOX-Nano
+- Transfer learning only
+- Train + validation only for tuning
+- Frozen project test remains untouched during B3
+- Upstream YOLOX commit: `6ddff4824372906469a7fae2dc3206c7aa4bbaee`
+- No paid training infrastructure
 
-## Execution policy
+## Resumable execution design
 
-1. Preferred zero-cost execution seam: Google Colab Free with GPU enabled.
-2. Kaggle GPU notebook is an acceptable fallback if Colab does not provide a GPU session.
-3. Upload only the compact `weld-v0.1-materialized.tar.gz`; do not upload the 1.1 GB canonical archive.
-4. Training/tuning may use only train + validation.
-5. The 45-image project test partition remains frozen until B4 promotion evaluation.
-6. Primary model remains YOLOX-Nano; SSDLite fallback is not activated by this hardware blocker.
-7. Transfer learning only; do not train from scratch.
-8. Upstream YOLOX must be pinned to commit `6ddff4824372906469a7fae2dc3206c7aa4bbaee`.
-9. Start with a 1-epoch smoke run. Only continue to the bounded 80-epoch candidate if the smoke is green.
-10. Do not claim model-quality PASS until validation metrics and checkpoint identity are recorded.
+The canonical notebook remains:
 
-## Colab Free procedure
+`ml/notebooks/WELD_VISION_B3_COLAB.ipynb`
 
-### 1. Start GPU runtime
+It now delegates execution to:
 
-Open a new Colab notebook and select a GPU runtime. First cell:
+`ml/scripts/b3_colab_resumable.py`
 
-```bash
-!nvidia-smi
-```
+The experiment supports a persistent output root through:
 
-If no NVIDIA GPU is exposed, stop and use the Kaggle fallback. Do not attempt a long CPU training run.
+`WELD_YOLOX_OUTPUT_DIR`
 
-### 2. Clone the project branch
+The resumable runner mounts Google Drive and persists:
 
-```bash
-%cd /content
-!git clone --branch build/mvp-v0.1 --single-branch https://github.com/sjo1848/weld-inspection-ai.git
-%cd /content/weld-inspection-ai
-!git rev-parse HEAD
-```
+- the compact materialized-data archive after the first upload;
+- official YOLOX-Nano pretrained weights;
+- the smoke-pass marker;
+- the main training console log;
+- YOLOX `latest_ckpt.pth`;
+- YOLOX `last_epoch_ckpt.pth`;
+- YOLOX `best_ckpt.pth`;
+- environment/evidence metadata.
 
-Record the exact project commit used for training.
+YOLOX upstream saves `latest_ckpt.pth` after every completed epoch and exposes `--resume` plus `-c/--ckpt`. The runner selects the newest readable `latest_ckpt.pth` or `last_epoch_ckpt.pth` and resumes from the checkpoint's stored `start_epoch`.
 
-### 3. Upload compact materialized data
+If Colab terminates mid-epoch, at most that incomplete epoch is lost. Completed epochs already persisted in Drive remain reusable.
 
-Use Colab's file upload UI to upload `weld-v0.1-materialized.tar.gz` to `/content`.
+## User procedure
 
-Then:
+1. Open the canonical Colab notebook from the GitHub branch.
+2. Select a GPU runtime.
+3. Click **Run all**.
+4. Authorize Google Drive when requested.
+5. On the first resumable run only, upload `weld-v0.1-materialized.tar.gz`.
+6. Leave the training running.
+7. If Colab stops or disconnects, reopen the same notebook, select GPU and click **Run all** again.
 
-```bash
-%cd /content/weld-inspection-ai
-!mkdir -p data/materialized
-!tar -xzf /content/weld-v0.1-materialized.tar.gz -C data/materialized
-!python -m pip install -e '.[dev]'
-!python ml/scripts/prepare_yolox_dataset.py data/materialized/weld-v0.1 --out data/yolox/weld-v0.1 --link-mode copy
-!cat data/yolox/weld-v0.1/yolox-dataset-summary.json
-```
+After the first successful setup, the compact dataset and pretrained weights are reused from Google Drive. A previously passed smoke test is also skipped.
 
-Required physical counts:
+The main run remains a single bounded 80-epoch candidate. It is not converted into a hyperparameter sweep and the total target epoch count is not changed merely to accommodate session limits.
 
-```bash
-!find data/yolox/weld-v0.1/train2017 -type f | wc -l
-!find data/yolox/weld-v0.1/val2017 -type f | wc -l
-!find data/yolox/weld-v0.1/test2017 -type f | wc -l
-```
+## Recovery details
 
-Expected exactly: 358 / 45 / 45.
+Persistent root in Colab Google Drive:
 
-### 4. Pin upstream YOLOX
+`MyDrive/WELD-VISION-001/B3`
 
-```bash
-%cd /content
-!git clone https://github.com/Megvii-BaseDetection/YOLOX.git YOLOX-weld-vendor
-%cd /content/YOLOX-weld-vendor
-!git checkout 6ddff4824372906469a7fae2dc3206c7aa4bbaee
-!git rev-parse HEAD
-```
+Main training output:
 
-Use the notebook's existing CUDA-enabled PyTorch. Install only the training dependencies needed by upstream source execution:
+`MyDrive/WELD-VISION-001/B3/YOLOX_outputs/weld_nano_v0_1_train`
 
-```bash
-!python -m pip install -U pip
-!python -m pip install loguru tqdm thop ninja tabulate psutil tensorboard pycocotools opencv-python
-```
+The runner checks both:
 
-The source tree can be executed directly from its root; a package build is not required for the smoke path.
+- `latest_ckpt.pth`
+- `last_epoch_ckpt.pth`
 
-Verify GPU/PyTorch:
+Unreadable/corrupted candidates are ignored, allowing fallback to the other persisted checkpoint.
 
-```python
-import torch
-print('torch:', torch.__version__)
-print('cuda available:', torch.cuda.is_available())
-print('cuda version:', torch.version.cuda)
-if torch.cuda.is_available():
-    p = torch.cuda.get_device_properties(0)
-    print('gpu:', torch.cuda.get_device_name(0))
-    print('vram bytes:', p.total_memory)
-assert torch.cuda.is_available(), 'GPU runtime is not usable'
-```
+Upstream resume command semantics are preserved:
 
-### 5. Download official YOLOX-Nano pretrained checkpoint
+`tools/train.py --resume -c <persisted checkpoint>`
 
-```bash
-%cd /content/YOLOX-weld-vendor
-!mkdir -p weights
-!wget -O weights/yolox_nano.pth https://github.com/Megvii-BaseDetection/YOLOX/releases/download/0.1.1rc0/yolox_nano.pth
-!sha256sum weights/yolox_nano.pth
-```
+The experiment still uses `WELD_YOLOX_EPOCHS=80`; resumption continues toward the same total schedule rather than starting a new 80-epoch run.
 
-Record the SHA-256 returned by the runtime.
+## Evidence output
 
-### 6. Set the frozen project paths
+When epoch 80 completes, the runner creates:
 
-```bash
-%env WELD_YOLOX_DATA_DIR=/content/weld-inspection-ai/data/yolox/weld-v0.1
-```
+`MyDrive/WELD-VISION-001/B3/weld-b3-evidence.tar.gz`
 
-Experiment:
+The package contains the available environment metadata, smoke marker, training logs and promoted checkpoint candidates. It must be reviewed before any B3 model-quality PASS is claimed.
 
-```text
-/content/weld-inspection-ai/ml/yolox/weld_nano_exp.py
-```
+Expected evidence includes:
 
-Pretrained checkpoint:
-
-```text
-/content/YOLOX-weld-vendor/weights/yolox_nano.pth
-```
-
-### 7. Select a conservative batch
-
-Use VRAM as a bounded heuristic:
-
-- >= 14 GiB: batch 8
-- >= 8 GiB: batch 4
-- otherwise: batch 2
-
-Do not maximize memory usage. If the smoke OOMs, reduce the batch once and retry once.
-
-### 8. One-epoch smoke
-
-```bash
-%cd /content/YOLOX-weld-vendor
-%env WELD_YOLOX_EPOCHS=1
-%env WELD_YOLOX_WORKERS=2
-!python tools/train.py -f /content/weld-inspection-ai/ml/yolox/weld_nano_exp.py -d 1 -b <BATCH> --fp16 -c /content/YOLOX-weld-vendor/weights/yolox_nano.pth
-```
-
-If FP16 itself is the blocker, repeat once without `--fp16` and record the reason.
-
-Smoke PASS requires:
-
-- train data loads;
-- validation data loads;
-- three custom classes are recognized;
-- pretrained checkpoint is consumed as transfer-learning input;
-- mismatched 80-class head tensors are skipped rather than treated as fatal;
-- forward/backward completes;
-- validation completes;
-- checkpoint is written;
-- no tuning/evaluation uses `test2017`.
-
-### 9. Bounded 80-epoch candidate
-
-Only after smoke PASS:
-
-```bash
-%cd /content/YOLOX-weld-vendor
-%env WELD_YOLOX_EPOCHS=80
-!python tools/train.py -f /content/weld-inspection-ai/ml/yolox/weld_nano_exp.py -d 1 -b <SAME_BATCH> --fp16 -c /content/YOLOX-weld-vendor/weights/yolox_nano.pth
-```
-
-Do not launch alternate models or hyperparameter sweeps.
-
-## Evidence to preserve before the runtime disappears
-
-Record or download:
-
-- exact `weld-inspection-ai` commit;
-- exact YOLOX upstream commit;
-- Python version;
-- PyTorch version;
-- CUDA version;
-- GPU model and VRAM;
-- batch, epochs, FP16 yes/no;
+- exact project commit;
+- exact YOLOX commit;
+- Python / PyTorch / CUDA versions;
+- GPU and VRAM;
+- batch;
+- target and completed epochs;
 - official pretrained checkpoint SHA-256;
-- exact training command;
-- elapsed training time;
-- `best_ckpt.pth` and `latest_ckpt.pth` paths;
-- SHA-256 of `best_ckpt.pth`;
-- best epoch;
-- validation AP50 and AP50:95 reported by YOLOX/COCOeval;
-- per-class AP/AR output reported by YOLOX;
-- warnings/errors;
-- proof that frozen test was not used for tuning.
+- latest/best checkpoint paths and SHA-256 values;
+- validation logs and COCO metrics;
+- confirmation that the frozen project test was not used for tuning.
 
-Before ending the free GPU session, download the best checkpoint plus the training logs/evidence bundle. Do not commit weights to Git.
+## Important limitation
 
-## Kaggle fallback
+Upstream YOLOX supports checkpoint resume and stores optimizer plus epoch state, but exact bit-for-bit continuation across interrupted seeded sessions is not guaranteed. The upstream trainer itself warns that restarting from checkpoints under deterministic seeding may have unexpected behavior. For this educational MVP, resumed training is accepted as the operational recovery path, while checkpoint lineage and validation evidence remain mandatory.
 
-If Colab Free exposes no GPU, use a Kaggle notebook with GPU acceleration. The same invariants apply: clone `build/mvp-v0.1`, pin YOLOX to `6ddff4824372906469a7fae2dc3206c7aa4bbaee`, upload only the 28 MB compact tar, rebuild the strict YOLOX layout, smoke for 1 epoch, then run one 80-epoch candidate. Keep project test frozen.
-
-## Exit states
+## B3 exit states
 
 - `B3_SMOKE_PASS_AND_TRAINING_COMPLETE`
-- `B3_SMOKE_PASS_TRAINING_NOT_RUN`
+- `B3_RESUMABLE_TRAINING_INCOMPLETE`
 - `GPU_RUNTIME_BLOCKER`
 - `TRAINING_BLOCKER`
 
-A completed process is not automatically a model-quality PASS. B3 model evidence closes only after metrics, checkpoint identity and validation behavior are reviewed.
+A completed 80-epoch process is not automatically a model-quality PASS. B3 closes only after metrics, checkpoint identity and validation behavior are reviewed. The frozen test remains reserved for the later promotion/evaluation stage.
