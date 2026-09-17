@@ -22,6 +22,7 @@ class Exp(BaseExp):
 
         self.num_classes = 3
         self.data_dir = os.environ.get("WELD_YOLOX_DATA_DIR", "data/yolox/weld-v0.1")
+        self.output_dir = os.environ.get("WELD_YOLOX_OUTPUT_DIR", "./YOLOX_outputs")
         self.train_ann = "instances_train.json"
         self.val_ann = "instances_val.json"
         self.test_ann = "instances_test.json"
