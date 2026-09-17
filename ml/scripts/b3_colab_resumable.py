@@ -70,19 +70,24 @@ def usable_checkpoint(*candidates):
 
 
 def clone_project():
-    if PROJECT.exists():
-        shutil.rmtree(PROJECT)
-    run(
-        [
-            "git",
-            "clone",
-            "--branch",
-            PROJECT_BRANCH,
-            "--single-branch",
-            PROJECT_REPO,
-            PROJECT,
-        ]
-    )
+    if PROJECT.exists() and (PROJECT / ".git").exists():
+        run(["git", "-C", PROJECT, "fetch", "origin", PROJECT_BRANCH])
+        run(["git", "-C", PROJECT, "switch", PROJECT_BRANCH])
+        run(["git", "-C", PROJECT, "pull", "--ff-only"])
+    else:
+        if PROJECT.exists():
+            shutil.rmtree(PROJECT)
+        run(
+            [
+                "git",
+                "clone",
+                "--branch",
+                PROJECT_BRANCH,
+                "--single-branch",
+                PROJECT_REPO,
+                PROJECT,
+            ]
+        )
     return subprocess.check_output(
         ["git", "-C", str(PROJECT), "rev-parse", "HEAD"],
         text=True,
