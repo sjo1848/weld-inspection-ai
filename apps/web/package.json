@@ -10,7 +10,8 @@
     "typecheck": "vue-tsc --noEmit",
     "test:portability": "playwright test tests/portability.spec.ts --config=playwright.config.ts",
     "test:promoted": "playwright test tests/promoted-portability.spec.ts --config=playwright.promoted.config.ts",
-    "test:unit": "vitest run tests/App.spec.ts tests/preprocess.spec.ts tests/yolox.spec.ts"
+    "test:unit": "vitest run tests/App.spec.ts tests/preprocess.spec.ts tests/yolox.spec.ts",
+    "test:b5-reference": "playwright test tests/b5-reference-path.spec.ts --config=playwright.b5.config.ts"
   },
   "dependencies": {
     "onnxruntime-web": "^1.20.1",
