@@ -33,7 +33,9 @@ RESULT_PATH = DRIVE_B4 / "b4-frozen-test.json"
 
 
 def parse_args() -> argparse.Namespace:
-    parser = argparse.ArgumentParser("WELD-VISION-001 B4.2 frozen-test runner")
+    parser = argparse.ArgumentParser(
+        "WELD-VISION-001 B4.2 frozen-test runner"
+    )
     parser.add_argument("--manifest-sha256", required=True)
     parser.add_argument("--ack", required=True)
     return parser.parse_args()
@@ -42,12 +44,15 @@ def parse_args() -> argparse.Namespace:
 def main() -> None:
     args = parse_args()
     if args.ack != ACK:
-        raise SystemExit(f"Frozen test not authorized. Required --ack {ACK}")
+        raise SystemExit(
+            f"Frozen test not authorized. Required --ack {ACK}"
+        )
 
     drive.mount("/content/drive")
     if CONSUMED_MARKER.exists():
         raise SystemExit(
-            "Frozen test evidence already exists. Do not rerun or tune against the test set."
+            "Frozen test evidence already exists. "
+            "Do not rerun or tune against the test set."
         )
     if not MANIFEST_PATH.exists():
         raise SystemExit("B4.1 frozen candidate manifest is missing")
@@ -58,19 +63,25 @@ def main() -> None:
 
     sys.path.insert(0, str(PROJECT / "ml/src"))
     sys.path.insert(0, str(YOLOX))
-    from weldvision.evaluation.promotion import sha256_file, validate_frozen_manifest
     from yolox.exp import get_exp
+
+    from weldvision.evaluation.promotion import (
+        sha256_file,
+        validate_frozen_manifest,
+    )
 
     manifest_sha = sha256_file(MANIFEST_PATH)
     if manifest_sha != args.manifest_sha256:
         raise SystemExit(
-            f"Manifest SHA mismatch: got {manifest_sha}, expected {args.manifest_sha256}"
+            f"Manifest SHA mismatch: got {manifest_sha}, "
+            f"expected {args.manifest_sha256}"
         )
 
     manifest = json.loads(MANIFEST_PATH.read_text())
     if project_sha != manifest["project_commit"]:
         raise SystemExit(
-            "Repository head changed after manifest freeze. Review before frozen-test execution."
+            "Repository head changed after manifest freeze. "
+            "Review before frozen-test execution."
         )
 
     checkpoint_sha = sha256_file(BEST_CKPT)
@@ -80,7 +91,9 @@ def main() -> None:
     )
 
     os.environ["WELD_YOLOX_DATA_DIR"] = str(yolox_data_root)
-    os.environ["WELD_YOLOX_OUTPUT_DIR"] = str(DRIVE_B4 / "YOLOX_outputs-test")
+    os.environ["WELD_YOLOX_OUTPUT_DIR"] = str(
+        DRIVE_B4 / "YOLOX_outputs-test"
+    )
     os.environ["WELD_YOLOX_EPOCHS"] = "80"
     os.environ["WELD_YOLOX_WORKERS"] = "2"
 
@@ -92,16 +105,25 @@ def main() -> None:
         raise SystemExit("NMS threshold differs from B4 contract")
 
     model = exp.get_model()
-    checkpoint = torch.load(BEST_CKPT, map_location="cuda:0", weights_only=False)
+    checkpoint = torch.load(
+        BEST_CKPT,
+        map_location="cuda:0",
+        weights_only=False,
+    )
     model.load_state_dict(checkpoint["model"])
     model.cuda(0).eval()
 
-    evaluator = exp.get_evaluator(batch_size=8, is_distributed=False, testdev=False, legacy=False)
+    evaluator = exp.get_evaluator(
+        batch_size=8,
+        is_distributed=False,
+        testdev=False,
+        legacy=False,
+    )
     evaluator.per_class_AP = True
     evaluator.per_class_AR = True
 
     print("B4.2 FROZEN TEST: one successful execution only.")
-    (_, output_data) = evaluator.evaluate(
+    _, output_data = evaluator.evaluate(
         model,
         distributed=False,
         half=True,
@@ -112,7 +134,9 @@ def main() -> None:
     )
     coco_gt = evaluator.dataloader.dataset.coco
     if len(coco_gt.getImgIds()) != 45:
-        raise SystemExit("Frozen project test must contain exactly 45 images")
+        raise SystemExit(
+            "Frozen project test must contain exactly 45 images"
+        )
 
     metrics = evaluate_threshold(
         coco_gt,
@@ -130,7 +154,10 @@ def main() -> None:
         "nms_threshold": manifest["nms_threshold"],
         "supported_classes": list(PROMOTED_CLASSES),
         "metrics": metrics,
-        "rule": "No threshold, class or checkpoint tuning is allowed after this evidence.",
+        "rule": (
+            "No threshold, class or checkpoint tuning is allowed "
+            "after this evidence."
+        ),
     }
     RESULT_PATH.write_text(json.dumps(result, indent=2))
 
