@@ -98,7 +98,8 @@ def main() -> None:
     os.environ["WELD_YOLOX_WORKERS"] = "2"
 
     exp = get_exp(str(PROJECT / "ml/yolox/weld_nano_exp.py"), None)
-    exp.val_ann = "instances_test.json"
+    if exp.test_ann != "instances_test.json":
+        raise SystemExit("Unexpected YOLOX test annotation contract")
     exp.test_conf = float(manifest["confidence_threshold"])
     exp.nmsthre = float(manifest["nms_threshold"])
     if exp.nmsthre != NMS_THRESHOLD:
@@ -116,7 +117,7 @@ def main() -> None:
     evaluator = exp.get_evaluator(
         batch_size=8,
         is_distributed=False,
-        testdev=False,
+        testdev=True,
         legacy=False,
     )
     evaluator.per_class_AP = True
