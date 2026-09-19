@@ -168,27 +168,49 @@ def validate_frozen_evidence() -> tuple[dict, dict]:
 
 
 def export_onnx() -> None:
-    output = str(ONNX_PATH)
-    run(
-        [
-            sys.executable,
-            "tools/export_onnx.py",
-            "-f",
-            PROJECT / "ml/yolox/weld_nano_exp.py",
-            "-c",
-            BEST_CKPT,
-            "--output-name",
-            output,
-            "--input",
-            "images",
-            "--output",
-            "output",
-            "-o",
-            "11",
-            "--no-onnxsim",
-        ],
-        cwd=YOLOX,
+    from torch import nn
+
+    sys.path.insert(0, str(YOLOX))
+    from yolox.exp import get_exp
+    from yolox.models.network_blocks import SiLU
+    from yolox.utils import replace_module
+
+    exp = get_exp(str(PROJECT / "ml/yolox/weld_nano_exp.py"), None)
+    model = exp.get_model()
+
+    checkpoint = torch.load(
+        BEST_CKPT,
+        map_location="cpu",
+        weights_only=False,
     )
+    state_dict = checkpoint["model"] if "model" in checkpoint else checkpoint
+    model.load_state_dict(state_dict)
+    model = replace_module(model, nn.SiLU, SiLU)
+    model.head.decode_in_inference = False
+    model.eval()
+
+    dummy_input = torch.randn(1, 3, 416, 416)
+
+    if ONNX_PATH.exists():
+        ONNX_PATH.unlink()
+
+    print(
+        "B4.3 export: torch.onnx.export / "
+        "legacy TorchScript path / dynamo=False / opset 11"
+    )
+
+    torch.onnx.export(
+        model,
+        dummy_input,
+        str(ONNX_PATH),
+        input_names=["images"],
+        output_names=["output"],
+        opset_version=11,
+        dynamo=False,
+    )
+
+    if not ONNX_PATH.exists() or ONNX_PATH.stat().st_size <= 0:
+        raise SystemExit("ONNX export did not produce a valid artifact")
 
 
 def run_python_parity(
