@@ -109,10 +109,23 @@ def prepare_dataset():
     yolox_data_root = PROJECT / "data/yolox/weld-v0.1"
     materialized_root.mkdir(parents=True, exist_ok=True)
     run(["tar", "-xzf", drive_archive, "-C", materialized_root])
-    run(
-        [sys.executable, "-m", "pip", "install", "-q", "-e", ".[dev]"],
-        cwd=PROJECT,
+
+    # Colab's system Python can move ahead of the package's supported dev/runtime
+    # range (for example Python 3.13 while pyproject.toml is intentionally pinned
+    # to <3.13). Dataset conversion only needs the local weldvision source and
+    # standard library, so avoid installing the project into Colab's global
+    # environment. This also avoids unnecessary NumPy/package churn on the GPU
+    # runtime.
+    dataset_env = os.environ.copy()
+    project_src = str(PROJECT / "ml/src")
+    existing_pythonpath = dataset_env.get("PYTHONPATH")
+    dataset_env["PYTHONPATH"] = (
+        f"{project_src}{os.pathsep}{existing_pythonpath}"
+        if existing_pythonpath
+        else project_src
     )
+    print("Dataset prep uses local project source via PYTHONPATH:", project_src)
+
     run(
         [
             sys.executable,
@@ -124,6 +137,7 @@ def prepare_dataset():
             "copy",
         ],
         cwd=PROJECT,
+        env=dataset_env,
     )
 
     counts = {}
