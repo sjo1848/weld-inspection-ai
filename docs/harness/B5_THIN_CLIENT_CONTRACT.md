@@ -1,9 +1,9 @@
-# WV-TC-B5-001 — Thin Client Vertical Slice — ACTIVE
+# WV-TC-B5-001 — Thin Client Vertical Slice — COMPLETE
 
 Project: WELD-VISION-001 — Weld Inspection AI — FALDEO  
 Phase: BUILD  
 Authority: HG-WV-002 Option A + WV-TC-BUILD-001  
-Status: B5 ACTIVE / B4 TECHNICAL PASS / NO NEW HUMAN GATE
+Status: B5 COMPLETE / TECHNICAL PASS / B4 TECHNICAL PASS / NO NEW HUMAN GATE
 
 ## 1. Purpose
 
@@ -127,3 +127,16 @@ B5 is TECHNICAL PASS only if:
 ## 9. Next step after B5
 
 B6 Cloudflare delivery. The known ORT WASM ~26.8 MB single-file issue must be resolved there without changing the client-side inference boundary.
+
+## 10. Closure evidence
+
+- validated implementation commit: `fe79d5cbf7d0756b098a015f7c40eda3e263326b`
+- CI #85: SUCCESS
+- real validation-image production path: PASS
+- runtime: WASM fallback after unavailable WebGPU
+- privacy: 0 non-read requests / 0 request bodies
+- frozen test used: false
+- integrated reference result: 0 detections on a validation image selected because it contains at least one supported-class ground-truth annotation; retained as a false-negative example and not used for tuning
+- durable evidence: `docs/evidence/B5_THIN_CLIENT.md` and Drive `WELD-VISION-001/B5`
+
+B5 is closed as **TECHNICAL PASS**. Model-quality limitations remain active and move forward to B7; they are not repaired by post-test tuning.
