@@ -9,6 +9,7 @@
   "scripts": {
     "web:dev": "pnpm --filter @weld-inspection-ai/web dev",
     "web:build": "pnpm --filter @weld-inspection-ai/web build",
-    "web:typecheck": "pnpm --filter @weld-inspection-ai/web typecheck"
+    "web:typecheck": "pnpm --filter @weld-inspection-ai/web typecheck",
+    "web:test": "pnpm --filter @weld-inspection-ai/web test:unit"
   }
 }
