@@ -37,6 +37,7 @@ ONNX_PATH = DRIVE_B4 / "weld-yolox-nano-v0.1.onnx"
 PYTHON_PARITY_PATH = DRIVE_B4 / "b4-python-onnx-parity.json"
 BROWSER_REFERENCE_PATH = DRIVE_B4 / "b4-browser-reference.json"
 BROWSER_EVIDENCE_PATH = DRIVE_B4 / "b4-browser-wasm-evidence.json"
+BROWSER_LOG_PATH = DRIVE_B4 / "b4-browser-playwright.log"
 FINAL_MANIFEST_PATH = DRIVE_B4 / "model-manifest.v0.1.json"
 
 PATTERNS = ("zero", "fill114", "ramp251")
@@ -347,6 +348,9 @@ def run_browser_wasm() -> dict:
     run(["corepack", "enable"])
     run(["corepack", "prepare", "pnpm@10.15.1", "--activate"])
     run(["pnpm", "install", "--no-frozen-lockfile"], cwd=PROJECT)
+
+    # Colab images are not guaranteed to include Chromium's system libraries.
+    # Install both the bundled browser and its Linux dependencies.
     run(
         [
             "pnpm",
@@ -355,6 +359,7 @@ def run_browser_wasm() -> dict:
             "exec",
             "playwright",
             "install",
+            "--with-deps",
             "chromium",
         ],
         cwd=PROJECT,
@@ -365,22 +370,42 @@ def run_browser_wasm() -> dict:
     env["B4_MODEL_URL"] = f"/models/{model_name}"
     env["B4_REFERENCE_JSON"] = str(BROWSER_REFERENCE_PATH)
     env["B4_BROWSER_EVIDENCE_JSON"] = str(BROWSER_EVIDENCE_PATH)
-    run(
-        [
-            "pnpm",
-            "--filter",
-            "@weld-inspection-ai/web",
-            "test:promoted",
-        ],
+
+    command = [
+        "pnpm",
+        "--filter",
+        "@weld-inspection-ai/web",
+        "test:promoted",
+    ]
+    print("+", " ".join(command))
+    result = subprocess.run(
+        command,
         cwd=PROJECT,
         env=env,
+        text=True,
+        stdout=subprocess.PIPE,
+        stderr=subprocess.STDOUT,
     )
+    BROWSER_LOG_PATH.write_text(result.stdout or "")
+    print(result.stdout or "")
+
+    if result.returncode != 0:
+        raise SystemExit(
+            "Browser/WASM parity command failed. "
+            f"Full log: {BROWSER_LOG_PATH}"
+        )
 
     if not BROWSER_EVIDENCE_PATH.exists():
-        raise SystemExit("Browser parity evidence file was not produced")
+        raise SystemExit(
+            "Browser parity evidence file was not produced. "
+            f"Full log: {BROWSER_LOG_PATH}"
+        )
     browser = json.loads(BROWSER_EVIDENCE_PATH.read_text())
     if browser.get("status") != "PASS":
-        raise SystemExit("Browser WASM parity did not PASS")
+        raise SystemExit(
+            "Browser WASM parity did not PASS. "
+            f"Full log: {BROWSER_LOG_PATH}"
+        )
     return browser
 
 
@@ -467,13 +492,36 @@ def main() -> None:
 
     manifest, frozen_test = validate_frozen_evidence()
     tooling_commit = clone_project()
-    prepare_yolox()
 
-    export_onnx()
-    if not ONNX_PATH.exists():
-        raise SystemExit("ONNX export did not produce the artifact")
+    parity = None
+    if (
+        ONNX_PATH.exists()
+        and PYTHON_PARITY_PATH.exists()
+        and BROWSER_REFERENCE_PATH.exists()
+    ):
+        existing_parity = json.loads(PYTHON_PARITY_PATH.read_text())
+        onnx_sha = sha256_file(ONNX_PATH)
+        if (
+            existing_parity.get("stage") == "B4_3_PYTHON_ONNX_PARITY_PASS"
+            and existing_parity.get("onnx_sha256") == onnx_sha
+            and existing_parity.get("checkpoint_sha256")
+            == EXPECTED_CHECKPOINT_SHA256
+            and existing_parity.get("source_manifest_sha256")
+            == EXPECTED_MANIFEST_SHA256
+        ):
+            parity = existing_parity
+            print(
+                "B4.3 resume: existing ONNX + Python parity verified; "
+                "skipping re-export."
+            )
 
-    parity, _ = run_python_parity(manifest, tooling_commit)
+    if parity is None:
+        prepare_yolox()
+        export_onnx()
+        if not ONNX_PATH.exists():
+            raise SystemExit("ONNX export did not produce the artifact")
+        parity, _ = run_python_parity(manifest, tooling_commit)
+
     browser = run_browser_wasm()
     final_manifest = write_final_manifest(
         manifest,
