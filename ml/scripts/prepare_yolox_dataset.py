@@ -11,7 +11,10 @@ PROJECT_EXPECTED_TILES = {"train": 358, "val": 45, "test": 45}
 
 def main() -> int:
     parser = argparse.ArgumentParser(
-        description="Prepare the frozen WELD-VISION-001 materialized split for upstream YOLOX"
+        description=(
+            "Prepare the frozen WELD-VISION-001 materialized split "
+            "for upstream YOLOX"
+        )
     )
     parser.add_argument(
         "materialized_root",
@@ -27,7 +30,17 @@ def main() -> int:
         "--link-mode",
         choices=("copy", "hardlink", "symlink"),
         default="hardlink",
-        help="How images are placed into YOLOX train2017/val2017/test2017 directories",
+        help=(
+            "How images are placed into YOLOX "
+            "train2017/val2017/test2017 directories"
+        ),
+    )
+    parser.add_argument(
+        "--splits",
+        nargs="+",
+        choices=("train", "val", "test"),
+        default=("train", "val", "test"),
+        help="Only materialize the named split(s); default is all.",
     )
     args = parser.parse_args()
 
@@ -36,6 +49,7 @@ def main() -> int:
         args.out,
         link_mode=args.link_mode,
         expected_tiles=PROJECT_EXPECTED_TILES,
+        splits=tuple(args.splits),
     )
     print(json.dumps(summary, indent=2, sort_keys=True))
     return 0
