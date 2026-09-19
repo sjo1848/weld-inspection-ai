@@ -6,8 +6,8 @@ This file indexes durable evidence. It is not a second source of truth for proje
 | --- | --- | --- |
 | Problem | PROVEN | `WV-REQ-001 — MVP Requirements Baseline v0.1` in project Drive |
 | Design | PROVEN | `WV-ARCH-001`, `WV-ADR-001`, `WV-ML-001`, `WV-RTC-001`, `WV-WF-001`, and `WV-DR-001` in project Drive |
-| Implementation | PARTIAL | B0, B1 and B2 technical PASS; B3–B6 outstanding |
-| Validation | PARTIAL | data split integrity and reference browser runtime proven; task-model and integrated product validation outstanding |
+| Implementation | PARTIAL | B0/B1/B2 technical PASS; B3 training complete; B4.1 calibration PASS; B4.2 held-out quantitative PASS; B4.3–B6 outstanding |
+| Validation | PARTIAL | source-aware split, task-model validation/frozen-test metrics and reference browser runtime proven; promoted ONNX/browser parity and integrated product validation outstanding |
 | Release / Deployment | UNKNOWN | No Cloudflare deployment evidence; ORT WASM static-asset size constraint identified |
 | Maintenance / Operations | NOT_APPLICABLE | MVP phase; evolution path only |
 | Judgment / Material Decisions | PROVEN | Approved Definition and DESIGN → BUILD Human Gate in project Drive |
@@ -54,6 +54,27 @@ This file indexes durable evidence. It is not a second source of truth for proje
 - Playwright: 1/1 PASS
 
 This proves reference-family browser portability, not welding task-model quality or mobile latency.
+
+### B3 — transfer-learning candidate
+- training: 80/80 epochs on Tesla T4
+- promoted checkpoint candidate: `best_ckpt.pth`
+- checkpoint SHA-256: `7e5cd8915262a0f912de33a04262e7fab7b984badf70cf2f92f1a38fbac7fb8b`
+- persistent logs/checkpoints/evidence package: Drive `WELD-VISION-001/B3`
+- validation identified `spatter` and `slag inclusion` as promotion candidates
+- `undercut` remains diagnostic-only / not promoted
+
+### B4.1/B4.2 — calibration and frozen held-out evaluation
+- B4.1 candidate manifest SHA-256: `a78d393a623708b59594a2df5bc6073e7c830fe36db8ab0332e811da054c64fb`
+- frozen confidence threshold: `0.20`
+- frozen NMS threshold: `0.65`
+- frozen test: 45 images / 71 boxes / 7 source photos
+- frozen test status: **CONSUMED — do not rerun/tune**
+- held-out slag inclusion: P 0.5294 / R 0.6429 / F1 0.5806 / AP50 0.5227
+- held-out spatter: P 0.7576 / R 0.6098 / F1 0.6757 / AP50 0.5476
+- diagnostic undercut: P 0.4211 / R 0.5000 / F1 0.4571 / AP50 0.3148
+- promoted classes remain `spatter` + `slag inclusion`
+- durable evidence: `docs/evidence/B4_MODEL_PROMOTION.md` plus Drive `B4` JSON artifacts
+- image-level FP/FN examples were not persisted by the one-shot runner; B7 independent phone/demo evidence must close that gap without rerunning the frozen test
 
 ## Delivery constraint evidence
 
