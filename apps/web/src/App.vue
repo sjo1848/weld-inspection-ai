@@ -192,6 +192,7 @@ onBeforeUnmount(clearPreview)
     <section
       v-if="phase === 'result' && result"
       class="card result-card"
+      data-testid="result-card"
       aria-live="polite"
     >
       <div class="section-heading">
@@ -204,7 +205,11 @@ onBeforeUnmount(clearPreview)
         </div>
       </div>
 
-      <div v-if="result.detections.length === 0" class="notice neutral">
+      <div
+        v-if="result.detections.length === 0"
+        class="notice neutral"
+        data-testid="zero-result"
+      >
         <strong>Sin detecciones soportadas.</strong>
         <p>
           Esto no significa que la soldadura sea aceptable, segura o libre de
@@ -217,6 +222,7 @@ onBeforeUnmount(clearPreview)
         <li
           v-for="(detection, index) in result.detections"
           :key="`result-${detection.classId}-${index}`"
+          data-testid="detection-item"
         >
           <div>
             <strong>{{ detectionName(detection.label) }}</strong>
@@ -226,7 +232,7 @@ onBeforeUnmount(clearPreview)
         </li>
       </ul>
 
-      <div class="runtime">
+      <div class="runtime" data-testid="runtime-info">
         <span>Modelo {{ result.modelVersion }}</span>
         <span>Runtime {{ result.provider.toUpperCase() }}</span>
         <span>Umbral {{ result.confidenceThreshold.toFixed(2) }}</span>
@@ -245,7 +251,12 @@ onBeforeUnmount(clearPreview)
       </button>
     </section>
 
-    <section v-if="phase === 'error'" class="card error-card" aria-live="assertive">
+    <section
+      v-if="phase === 'error'"
+      class="card error-card"
+      data-testid="runtime-error"
+      aria-live="assertive"
+    >
       <h2>No se pudo analizar la imagen</h2>
       <p>{{ errorMessage }}</p>
       <p>
