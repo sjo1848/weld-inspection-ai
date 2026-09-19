@@ -61,7 +61,13 @@ def clone_project() -> str:
     ).strip()
 
 
-def _extract_validation_only(destination_root: pathlib.Path) -> None:
+def _extract_split(
+    destination_root: pathlib.Path,
+    split: str,
+) -> None:
+    if split not in {"val", "test"}:
+        raise ValueError(f"B4 only permits val/test preparation, got: {split}")
+
     if destination_root.exists():
         shutil.rmtree(destination_root)
     destination_root.mkdir(parents=True, exist_ok=True)
@@ -70,25 +76,30 @@ def _extract_validation_only(destination_root: pathlib.Path) -> None:
         members = [
             member
             for member in archive.getmembers()
-            if "val" in pathlib.PurePosixPath(member.name).parts
+            if split in pathlib.PurePosixPath(member.name).parts
         ]
         if not members:
-            raise RuntimeError("Validation split was not found in the B3 archive")
+            raise RuntimeError(
+                f"{split} split was not found in the B3 archive"
+            )
 
         destination_resolved = destination_root.resolve()
         for member in members:
             target = (destination_root / member.name).resolve()
-            if destination_resolved not in target.parents and target != destination_resolved:
+            if (
+                destination_resolved not in target.parents
+                and target != destination_resolved
+            ):
                 raise RuntimeError(f"Unsafe archive member: {member.name}")
             archive.extract(member, destination_root)
 
 
-def prepare_dataset() -> pathlib.Path:
+def prepare_dataset(split: str) -> pathlib.Path:
     assert ARCHIVE.exists(), f"Missing persistent B3 dataset archive: {ARCHIVE}"
     materialized_root = PROJECT / "data/materialized"
     yolox_root = PROJECT / "data/yolox/weld-v0.1"
 
-    _extract_validation_only(materialized_root)
+    _extract_split(materialized_root, split)
     if yolox_root.exists():
         shutil.rmtree(yolox_root)
 
@@ -104,19 +115,30 @@ def prepare_dataset() -> pathlib.Path:
             "--link-mode",
             "copy",
             "--splits",
-            "val",
+            split,
         ],
         cwd=PROJECT,
         env=env,
     )
 
-    val_dir = yolox_root / "val2017"
-    val_count = sum(1 for path in val_dir.iterdir() if path.is_file())
-    assert val_count == 45, val_count
-    assert (yolox_root / "annotations/instances_val.json").is_file()
-    assert not (yolox_root / "annotations/instances_test.json").exists()
-    assert not (yolox_root / "test2017").exists()
-    print("B4.1 dataset isolation PASS: validation only; frozen test not materialized.")
+    split_dir = yolox_root / f"{split}2017"
+    split_count = sum(
+        1 for path in split_dir.iterdir() if path.is_file()
+    )
+    assert split_count == 45, split_count
+    annotation = yolox_root / "annotations" / f"instances_{split}.json"
+    assert annotation.is_file()
+
+    other = "test" if split == "val" else "val"
+    assert not (
+        yolox_root / "annotations" / f"instances_{other}.json"
+    ).exists()
+    assert not (yolox_root / f"{other}2017").exists()
+
+    print(
+        f"B4 dataset isolation PASS: {split} only; "
+        f"{other} not materialized."
+    )
     return yolox_root
 
 
@@ -292,7 +314,7 @@ def main() -> None:
     assert torch.cuda.is_available(), "B4.1 requires a CUDA GPU runtime"
 
     project_sha = clone_project()
-    yolox_data_root = prepare_dataset()
+    yolox_data_root = prepare_dataset("val")
     prepare_yolox()
 
     sys.path.insert(0, str(PROJECT / "ml/src"))
