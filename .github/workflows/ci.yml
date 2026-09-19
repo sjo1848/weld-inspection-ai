@@ -60,6 +60,12 @@ jobs:
       - name: Build web workspace
         run: pnpm web:build
 
+      - name: Prepare B6 Cloudflare static/R2 asset split
+        run: pnpm --filter @weld-inspection-ai/web prepare:cloudflare
+
+      - name: Validate B6 Worker bundle with Wrangler dry-run
+        run: pnpm --filter @weld-inspection-ai/web cloudflare:dry-run
+
   b2-portability:
     name: B2 YOLOX-Nano ORT Web/WASM portability
     needs: bootstrap
