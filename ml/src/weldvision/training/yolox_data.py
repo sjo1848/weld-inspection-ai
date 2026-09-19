@@ -122,8 +122,7 @@ def prepare_yolox_dataset(
 
     summary_path = output_root / "yolox-dataset-summary.json"
     summary_path.write_text(
-        json.dumps(summary, indent=2, sort_keys=True) + "
-",
+        json.dumps(summary, indent=2, sort_keys=True) + "\n",
         encoding="utf-8",
     )
     return summary
