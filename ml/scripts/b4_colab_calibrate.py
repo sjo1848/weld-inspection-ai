@@ -6,12 +6,12 @@ import pathlib
 import shutil
 import subprocess
 import sys
+import tarfile
 from collections import defaultdict
 
 import numpy as np
 import torch
 from google.colab import drive
-from pycocotools.cocoeval import COCOeval
 
 PROJECT_REPO = "https://github.com/sjo1848/weld-inspection-ai.git"
 PROJECT_BRANCH = "build/mvp-v0.1"
@@ -61,12 +61,36 @@ def clone_project() -> str:
     ).strip()
 
 
+def _extract_validation_only(destination_root: pathlib.Path) -> None:
+    if destination_root.exists():
+        shutil.rmtree(destination_root)
+    destination_root.mkdir(parents=True, exist_ok=True)
+
+    with tarfile.open(ARCHIVE, "r:gz") as archive:
+        members = [
+            member
+            for member in archive.getmembers()
+            if "val" in pathlib.PurePosixPath(member.name).parts
+        ]
+        if not members:
+            raise RuntimeError("Validation split was not found in the B3 archive")
+
+        destination_resolved = destination_root.resolve()
+        for member in members:
+            target = (destination_root / member.name).resolve()
+            if destination_resolved not in target.parents and target != destination_resolved:
+                raise RuntimeError(f"Unsafe archive member: {member.name}")
+            archive.extract(member, destination_root)
+
+
 def prepare_dataset() -> pathlib.Path:
     assert ARCHIVE.exists(), f"Missing persistent B3 dataset archive: {ARCHIVE}"
     materialized_root = PROJECT / "data/materialized"
     yolox_root = PROJECT / "data/yolox/weld-v0.1"
-    materialized_root.mkdir(parents=True, exist_ok=True)
-    run(["tar", "-xzf", ARCHIVE, "-C", materialized_root])
+
+    _extract_validation_only(materialized_root)
+    if yolox_root.exists():
+        shutil.rmtree(yolox_root)
 
     env = os.environ.copy()
     env["PYTHONPATH"] = str(PROJECT / "ml/src")
@@ -79,19 +103,20 @@ def prepare_dataset() -> pathlib.Path:
             "data/yolox/weld-v0.1",
             "--link-mode",
             "copy",
+            "--splits",
+            "val",
         ],
         cwd=PROJECT,
         env=env,
     )
-    counts = {
-        split: sum(
-            1
-            for path in (yolox_root / f"{split}2017").iterdir()
-            if path.is_file()
-        )
-        for split in ("train", "val", "test")
-    }
-    assert counts == {"train": 358, "val": 45, "test": 45}, counts
+
+    val_dir = yolox_root / "val2017"
+    val_count = sum(1 for path in val_dir.iterdir() if path.is_file())
+    assert val_count == 45, val_count
+    assert (yolox_root / "annotations/instances_val.json").is_file()
+    assert not (yolox_root / "annotations/instances_test.json").exists()
+    assert not (yolox_root / "test2017").exists()
+    print("B4.1 dataset isolation PASS: validation only; frozen test not materialized.")
     return yolox_root
 
 
@@ -210,6 +235,8 @@ def operating_point_counts(
 
 
 def evaluate_threshold(coco_gt, output_data: dict, threshold: float) -> dict:
+    from pycocotools.cocoeval import COCOeval
+
     predictions = threshold_predictions(output_data, threshold)
     cat_ids = sorted(coco_gt.cats)
     names = {cat_id: coco_gt.cats[cat_id]["name"] for cat_id in cat_ids}
@@ -262,6 +289,7 @@ def evaluate_threshold(coco_gt, output_data: dict, threshold: float) -> dict:
 def main() -> None:
     drive.mount("/content/drive")
     DRIVE_B4.mkdir(parents=True, exist_ok=True)
+    assert torch.cuda.is_available(), "B4.1 requires a CUDA GPU runtime"
 
     project_sha = clone_project()
     yolox_data_root = prepare_dataset()
