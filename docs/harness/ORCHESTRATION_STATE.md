@@ -15,8 +15,8 @@ Draft integration surface: PR #1
 | B2 Browser portability spike | **TECHNICAL PASS** | Prove YOLOX-Nano reference graph through ORT Web/WASM | commit `988ccb54...`, CI `34927649777`, real Chrome/WASM inference PASS |
 | B3 Transfer learning candidate | **COMPLETE** | Fine-tune one bounded YOLOX-Nano baseline | 80/80 epochs + checkpoint SHA + validation evidence |
 | B4 Model promotion | **TECHNICAL PASS** | Export, parity-check and freeze task model contract | ONNX identity/hash + final manifest + Python/browser parity PASS |
-| B5 Thin client | **ACTIVE** | Implement P0 mobile journey | tests + reference-path evidence + local image privacy behavior |
-| B6 Cloudflare delivery | PLANNED / DELIVERY CONSTRAINT KNOWN | Publish static app/model/config | resolve ~26.8 MB ORT WASM vs 25 MiB Static Assets limit, then deployment + smoke test |
+| B5 Thin client | **TECHNICAL PASS** | Implement P0 mobile journey | CI + real validation-image path + local-image privacy evidence PASS |
+| B6 Cloudflare delivery | **ACTIVE / REPOSITORY PREP PASS / HUMAN ACTION REQUIRED** | Publish static app/model/config | R2 seam + Wrangler dry-run PASS; remote account-bound upload/deploy next |
 | B7 Validate MVP | PLANNED / NEGATIVE SANITY SET REQUIRED | Execute acceptance/evaluation layers | validation report + supported class set + independent phone sanity set |
 
 ## Current branch and candidate identity
@@ -106,6 +106,34 @@ B4.3 promoted artifact:
 
 B4 is closed as TECHNICAL PASS. This does not close the overall Build contract; B5/B6/B7 and required integrated assurance remain.
 
+## B5 validated result
+
+- validated implementation commit: `fe79d5cbf7d0756b098a015f7c40eda3e263326b`;
+- CI #85 SUCCESS;
+- real validation image traversed the full production client path;
+- exact promoted model SHA verified before browser execution;
+- runtime completed on WASM after graceful WebGPU fallback;
+- zero detections were rendered as a neutral non-approval result, distinct from execution failure;
+- reference image was selected from validation images carrying at least one supported-class annotation, so the zero-detection result is retained as a concrete false-negative example;
+- privacy recorder observed 0 non-read requests and 0 request bodies;
+- frozen test was not used.
+
+B5 is closed as TECHNICAL PASS. The false-negative observation is model-quality evidence for B7 and does not authorize retuning.
+
+## B6 repository delivery preparation
+
+- current prepared head: `a4131e893c7dc8307b8c8f5c32725571cd5db03b`;
+- CI #91 SUCCESS;
+- exact generated oversized ORT WASM: `26,781,914` bytes;
+- runtime WASM SHA-256: `39f9f0894d478800487ed9f7dbe92618498db320cf55c8e3d89adff8dce658da`;
+- build step moves the oversized WASM out of Static Assets into R2 staging while preserving its URL key;
+- Worker selectively serves `/assets/*.wasm` from private R2 and falls through to `ASSETS` otherwise;
+- Wrangler deployment dry-run PASS;
+- B2 Chrome/WASM regression PASS;
+- Wrangler pinned to 4.86.0 to preserve Node 20 compatibility.
+
+Remote deployment is not yet evidence-backed because it requires Cloudflare account authorization and R2 bucket access.
+
 ## Delivery finding
 
 The B2 Vite build emits an ORT Web WASM runtime asset at approximately 26.8 MB, above Cloudflare Workers Static Assets' current 25 MiB per-file limit. B6 must either select a smaller compatible ORT WASM build or serve that runtime artifact through the already-allowed R2/CDN asset seam. This does not change the client-side inference boundary.
@@ -119,20 +147,17 @@ The B2 Vite build emits an ORT Web WASM runtime asset at approximately 26.8 MB, 
 
 ## Next authorized action
 
-B5 is authorized inside the active Build contract. Implement the thin mobile-first client against the final `model-manifest.v0.1.json` contract:
+B6 repository preparation is complete. The next step is an external Human Action because this runtime has no authorized Cloudflare account session:
 
-1. image select/capture and preview;
-2. local deterministic preprocessing to the exact 416×416 tensor contract;
-3. ONNX Runtime Web inference with WASM required and WebGPU optional;
-4. model adapter decode/scoring/class filtering/NMS using confidence 0.20 and NMS 0.65;
-5. expose only `spatter` and `slag inclusion` as supported classes;
-6. overlay detections back onto original-image coordinates;
-7. educational result copy with no pass/fail/certification semantics;
-8. explicit distinction between no detections and runtime/model failure;
-9. retry/new-analysis flow;
-10. automated unit/UI/reference-path evidence and proof that the core image path does not upload the user image.
+1. authenticate Wrangler against the user's Cloudflare account;
+2. ensure R2 is activated;
+3. create the Standard bucket `weld-vision-runtime` if it does not exist;
+4. stage the exact promoted ONNX using `WELD_VISION_MODEL_PATH`;
+5. execute the prepared deployment flow, which uploads the oversized runtime WASM to R2 and deploys the Worker + Static Assets;
+6. capture the resulting workers.dev deployment URL;
+7. run deployed asset and real-image smoke evidence before B6 closure.
 
-Do not reopen model tuning or modify the promoted model contract during B5.
+No threshold/model/class change is authorized.
 
 ## Stop condition
 
