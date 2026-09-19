@@ -6,9 +6,9 @@ This file indexes durable evidence. It is not a second source of truth for proje
 | --- | --- | --- |
 | Problem | PROVEN | `WV-REQ-001 — MVP Requirements Baseline v0.1` in project Drive |
 | Design | PROVEN | `WV-ARCH-001`, `WV-ADR-001`, `WV-ML-001`, `WV-RTC-001`, `WV-WF-001`, and `WV-DR-001` in project Drive |
-| Implementation | PARTIAL | B0/B1/B2 technical PASS; B3 training complete; B4 model promotion TECHNICAL PASS; B5–B6 outstanding |
-| Validation | PARTIAL | source-aware split, frozen-test metrics, promoted ONNX identity and browser/WASM parity proven; integrated product/mobile validation outstanding |
-| Release / Deployment | UNKNOWN | No Cloudflare deployment evidence; ORT WASM static-asset size constraint identified |
+| Implementation | PARTIAL | B0/B1/B2 technical PASS; B3 training complete; B4 and B5 TECHNICAL PASS; B6 repository delivery seam CI PASS, remote deployment pending |
+| Validation | PARTIAL | source-aware split, frozen-test metrics, promoted ONNX identity/parity and B5 real-image integrated path proven; independent phone/mobile validation outstanding |
+| Release / Deployment | PARTIAL | Cloudflare static/R2 seam prepared and Wrangler dry-run PASS; account-bound R2 upload/deploy/smoke evidence pending |
 | Maintenance / Operations | NOT_APPLICABLE | MVP phase; evolution path only |
 | Judgment / Material Decisions | PROVEN | Approved Definition and DESIGN → BUILD Human Gate in project Drive |
 
@@ -95,16 +95,41 @@ This proves reference-family browser portability, not welding task-model quality
 - confidence/NMS remain frozen at 0.20 / 0.65
 - frozen test remains consumed and must not be rerun/tuned
 
+### B5 — thin client integrated reference path
+- status: **TECHNICAL PASS**
+- validated implementation commit: `fe79d5cbf7d0756b098a015f7c40eda3e263326b`
+- CI #85: SUCCESS
+- reference image partition: validation
+- frozen test used: false
+- production path: Vue → preprocessing → ORT Web/WASM → YOLOX adapter → result UI
+- runtime: WASM after graceful WebGPU failure
+- network privacy: 8 total GET/blob reads, 0 non-read requests, 0 request bodies
+- selected image remained local through a `blob:` URL
+- integrated result: 0 detections on a validation image chosen from the supported-class GT set; retained as an explicit false-negative example, not used for tuning
+- durable evidence: `docs/evidence/B5_THIN_CLIENT.md` and Drive `WELD-VISION-001/B5`
+
+### B6 — Cloudflare delivery seam preparation
+- status: **REPOSITORY/CI PASS; REMOTE DEPLOY PENDING**
+- validated prep commit: `a4131e893c7dc8307b8c8f5c32725571cd5db03b`
+- GitHub Actions CI #91: SUCCESS
+- Workers Static Assets max-file constraint handled by moving oversized generated ORT WASM to R2 staging
+- oversized runtime asset: `assets/ort-wasm-simd-threaded.asyncify-D5D0fo7z.wasm`
+- bytes: `26,781,914`
+- SHA-256: `39f9f0894d478800487ed9f7dbe92618498db320cf55c8e3d89adff8dce658da`
+- Worker selectively intercepts `/assets/*.wasm` and streams matching R2 object same-origin
+- static assets remain under Cloudflare's 25 MiB per-file ceiling after preparation
+- Worker seam unit tests: PASS
+- Wrangler deployment dry-run: PASS
+- B2 Chrome/WASM portability regression: PASS
+- remote R2 bucket creation/upload and actual Workers deployment require account-bound Cloudflare authorization
+
 ## Delivery constraint evidence
 
 The B2 production build emitted an ONNX Runtime Web WASM file at approximately 26.8 MB. Current Cloudflare Workers Static Assets impose a 25 MiB per-file limit. B6 must resolve this through an evidence-backed smaller ORT build or the pre-approved R2/CDN asset seam while preserving client-side inference.
 
 ## Required Build evidence still outstanding
 
-- B3: bounded training configuration, checkpoint identity, measured validation metrics and failure examples.
-- B4: promoted task-model ONNX identity/hash, manifest, Python → ONNX parity and browser runtime evidence.
-- B5: local-inference privacy evidence plus unit/UI/reference-path evidence.
-- B6: resolved runtime/model asset delivery, Cloudflare deployment identity and smoke test.
+- B6: remote R2 object identity, Cloudflare deployment identity and deployed browser smoke evidence.
 - B7: final validation report, supported class set, known limitations and independent negative/background phone sanity evidence.
 - Independent Critic / Integration Review as required by the active FALDEO contract before overall technical completion.
 
