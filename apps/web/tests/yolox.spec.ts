@@ -54,8 +54,10 @@ const transform: ImageTransform = {
 describe('YOLOX raw adapter', () => {
   it('decodes a supported class and reverses the letterbox scale', () => {
     const raw = new Float32Array(3549 * 8)
-    raw[4] = 0.9
-    raw[6] = 0.8
+    const anchor = 53
+    const base = anchor * 8
+    raw[base + 4] = 0.9
+    raw[base + 6] = 0.8
 
     const detections = decodeYoloxRaw(raw, transform, manifest)
 
