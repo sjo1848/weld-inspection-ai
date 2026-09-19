@@ -44,9 +44,20 @@ def clone_project() -> str:
     else:
         if PROJECT.exists():
             shutil.rmtree(PROJECT)
-        run(["git", "clone", "--branch", PROJECT_BRANCH, "--single-branch", PROJECT_REPO, PROJECT])
+        run(
+            [
+                "git",
+                "clone",
+                "--branch",
+                PROJECT_BRANCH,
+                "--single-branch",
+                PROJECT_REPO,
+                PROJECT,
+            ]
+        )
     return subprocess.check_output(
-        ["git", "-C", str(PROJECT), "rev-parse", "HEAD"], text=True
+        ["git", "-C", str(PROJECT), "rev-parse", "HEAD"],
+        text=True,
     ).strip()
 
 
@@ -73,7 +84,11 @@ def prepare_dataset() -> pathlib.Path:
         env=env,
     )
     counts = {
-        split: sum(1 for path in (yolox_root / f"{split}2017").iterdir() if path.is_file())
+        split: sum(
+            1
+            for path in (yolox_root / f"{split}2017").iterdir()
+            if path.is_file()
+        )
         for split in ("train", "val", "test")
     }
     assert counts == {"train": 358, "val": 45, "test": 45}, counts
@@ -85,9 +100,22 @@ def prepare_yolox() -> None:
         shutil.rmtree(YOLOX)
     run(["git", "clone", "-q", YOLOX_REPO, YOLOX])
     run(["git", "checkout", YOLOX_COMMIT], cwd=YOLOX)
-    deps = ["loguru", "tqdm", "thop", "ninja", "tabulate", "psutil", "tensorboard", "pycocotools", "opencv-python"]
+    deps = [
+        "loguru",
+        "tqdm",
+        "thop",
+        "ninja",
+        "tabulate",
+        "psutil",
+        "tensorboard",
+        "pycocotools",
+        "opencv-python",
+    ]
     run([sys.executable, "-m", "pip", "install", "-q", *deps])
-    sha = subprocess.check_output(["git", "-C", str(YOLOX), "rev-parse", "HEAD"], text=True).strip()
+    sha = subprocess.check_output(
+        ["git", "-C", str(YOLOX), "rev-parse", "HEAD"],
+        text=True,
+    ).strip()
     assert sha == YOLOX_COMMIT
 
 
@@ -111,7 +139,10 @@ def threshold_predictions(output_data: dict, threshold: float) -> list[dict]:
     predictions = []
     for image_id, payload in output_data.items():
         for bbox, score, category_id in zip(
-            payload["bboxes"], payload["scores"], payload["categories"], strict=True
+            payload["bboxes"],
+            payload["scores"],
+            payload["categories"],
+            strict=True,
         ):
             if float(score) < threshold:
                 continue
@@ -127,7 +158,12 @@ def threshold_predictions(output_data: dict, threshold: float) -> list[dict]:
     return predictions
 
 
-def operating_point_counts(coco_gt, output_data: dict, threshold: float, cat_id: int) -> tuple[int, int, int]:
+def operating_point_counts(
+    coco_gt,
+    output_data: dict,
+    threshold: float,
+    cat_id: int,
+) -> tuple[int, int, int]:
     gt_by_image: dict[int, list[dict]] = defaultdict(list)
     for ann in coco_gt.loadAnns(coco_gt.getAnnIds(catIds=[cat_id])):
         gt_by_image[int(ann["image_id"])].append(ann)
@@ -135,10 +171,15 @@ def operating_point_counts(coco_gt, output_data: dict, threshold: float, cat_id:
     pred_by_image: dict[int, list[tuple[float, list[float]]]] = defaultdict(list)
     for image_id, payload in output_data.items():
         for bbox, score, category_id in zip(
-            payload["bboxes"], payload["scores"], payload["categories"], strict=True
+            payload["bboxes"],
+            payload["scores"],
+            payload["categories"],
+            strict=True,
         ):
             if int(category_id) == cat_id and float(score) >= threshold:
-                pred_by_image[int(image_id)].append((float(score), [float(v) for v in bbox]))
+                pred_by_image[int(image_id)].append(
+                    (float(score), [float(value) for value in bbox])
+                )
 
     tp = fp = 0
     matched_gt = 0
@@ -190,7 +231,12 @@ def evaluate_threshold(coco_gt, output_data: dict, threshold: float) -> dict:
 
     per_class = {}
     for cat_id in cat_ids:
-        tp, fp, fn = operating_point_counts(coco_gt, output_data, threshold, cat_id)
+        tp, fp, fn = operating_point_counts(
+            coco_gt,
+            output_data,
+            threshold,
+            cat_id,
+        )
         precision_value = tp / (tp + fp) if tp + fp else 0.0
         recall_value = tp / (tp + fn) if tp + fn else 0.0
         total = precision_value + recall_value
@@ -206,7 +252,11 @@ def evaluate_threshold(coco_gt, output_data: dict, threshold: float) -> dict:
             "fn": fn,
         }
 
-    return {"threshold": threshold, "overall_ap50": overall_ap50, "per_class": per_class}
+    return {
+        "threshold": threshold,
+        "overall_ap50": overall_ap50,
+        "per_class": per_class,
+    }
 
 
 def main() -> None:
@@ -219,18 +269,20 @@ def main() -> None:
 
     sys.path.insert(0, str(PROJECT / "ml/src"))
     sys.path.insert(0, str(YOLOX))
+    from yolox.exp import get_exp
+
     from weldvision.evaluation.promotion import (
         ClassMetrics,
         ThresholdResult,
         choose_operating_threshold,
         sha256_file,
     )
-    from yolox.exp import get_exp
 
     assert BEST_CKPT.exists(), f"Missing B3 best checkpoint: {BEST_CKPT}"
     checkpoint_sha = sha256_file(BEST_CKPT)
     assert checkpoint_sha == B3_BEST_SHA256, (
-        f"Unexpected checkpoint SHA-256: {checkpoint_sha}; expected {B3_BEST_SHA256}"
+        f"Unexpected checkpoint SHA-256: {checkpoint_sha}; "
+        f"expected {B3_BEST_SHA256}"
     )
 
     os.environ["WELD_YOLOX_DATA_DIR"] = str(yolox_data_root)
@@ -244,16 +296,25 @@ def main() -> None:
     exp.nmsthre = NMS_THRESHOLD
 
     model = exp.get_model()
-    checkpoint = torch.load(BEST_CKPT, map_location="cuda:0", weights_only=False)
+    checkpoint = torch.load(
+        BEST_CKPT,
+        map_location="cuda:0",
+        weights_only=False,
+    )
     model.load_state_dict(checkpoint["model"])
     model.cuda(0).eval()
 
-    evaluator = exp.get_evaluator(batch_size=8, is_distributed=False, testdev=False, legacy=False)
+    evaluator = exp.get_evaluator(
+        batch_size=8,
+        is_distributed=False,
+        testdev=False,
+        legacy=False,
+    )
     evaluator.per_class_AP = True
     evaluator.per_class_AR = True
 
     print("B4.1 validation-only inference. Frozen test is not accessed.")
-    (_, output_data) = evaluator.evaluate(
+    _, output_data = evaluator.evaluate(
         model,
         distributed=False,
         half=True,
@@ -265,7 +326,10 @@ def main() -> None:
     coco_gt = evaluator.dataloader.dataset.coco
     assert len(coco_gt.getImgIds()) == 45
 
-    calibration_rows = [evaluate_threshold(coco_gt, output_data, value) for value in THRESHOLDS]
+    calibration_rows = [
+        evaluate_threshold(coco_gt, output_data, value)
+        for value in THRESHOLDS
+    ]
     threshold_results = []
     for row in calibration_rows:
         class_metrics = {
@@ -276,10 +340,19 @@ def main() -> None:
             )
             for name, metrics in row["per_class"].items()
         }
-        threshold_results.append(ThresholdResult(row["threshold"], class_metrics))
+        threshold_results.append(
+            ThresholdResult(row["threshold"], class_metrics)
+        )
 
-    chosen = choose_operating_threshold(threshold_results, PROMOTED_CLASSES)
-    chosen_row = next(row for row in calibration_rows if row["threshold"] == chosen.threshold)
+    chosen = choose_operating_threshold(
+        threshold_results,
+        PROMOTED_CLASSES,
+    )
+    chosen_row = next(
+        row
+        for row in calibration_rows
+        if row["threshold"] == chosen.threshold
+    )
 
     for class_name in PROMOTED_CLASSES:
         assert chosen_row["per_class"][class_name]["tp"] > 0, (
@@ -308,7 +381,10 @@ def main() -> None:
     calibration_path.write_text(json.dumps(calibration, indent=2))
 
     cat_ids = sorted(coco_gt.cats)
-    class_order = [coco_gt.cats[cat_id]["name"] for cat_id in cat_ids]
+    class_order = [
+        coco_gt.cats[cat_id]["name"]
+        for cat_id in cat_ids
+    ]
     manifest = {
         "stage": "B4_CANDIDATE_FROZEN",
         "project_commit": project_sha,
