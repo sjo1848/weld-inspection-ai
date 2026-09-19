@@ -8,7 +8,7 @@
     "build": "vue-tsc --noEmit && vite build",
     "preview": "vite preview",
     "typecheck": "vue-tsc --noEmit",
-    "test:portability": "playwright test",
+    "test:portability": "playwright test tests/portability.spec.ts --config=playwright.config.ts",
     "test:promoted": "playwright test tests/promoted-portability.spec.ts --config=playwright.promoted.config.ts",
     "test:unit": "vitest run tests/App.spec.ts tests/preprocess.spec.ts tests/yolox.spec.ts"
   },
