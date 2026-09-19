@@ -8,7 +8,8 @@
     "build": "vue-tsc --noEmit && vite build",
     "preview": "vite preview",
     "typecheck": "vue-tsc --noEmit",
-    "test:portability": "playwright test"
+    "test:portability": "playwright test",
+    "test:promoted": "playwright test tests/promoted-portability.spec.ts --config=playwright.promoted.config.ts"
   },
   "dependencies": {
     "onnxruntime-web": "^1.20.1",
