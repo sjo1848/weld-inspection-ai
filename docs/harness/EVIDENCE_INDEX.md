@@ -6,8 +6,8 @@ This file indexes durable evidence. It is not a second source of truth for proje
 | --- | --- | --- |
 | Problem | PROVEN | `WV-REQ-001 — MVP Requirements Baseline v0.1` in project Drive |
 | Design | PROVEN | `WV-ARCH-001`, `WV-ADR-001`, `WV-ML-001`, `WV-RTC-001`, `WV-WF-001`, and `WV-DR-001` in project Drive |
-| Implementation | PARTIAL | B0/B1/B2 technical PASS; B3 training complete; B4.1 calibration PASS; B4.2 held-out quantitative PASS; B4.3–B6 outstanding |
-| Validation | PARTIAL | source-aware split, task-model validation/frozen-test metrics and reference browser runtime proven; promoted ONNX/browser parity and integrated product validation outstanding |
+| Implementation | PARTIAL | B0/B1/B2 technical PASS; B3 training complete; B4 model promotion TECHNICAL PASS; B5–B6 outstanding |
+| Validation | PARTIAL | source-aware split, frozen-test metrics, promoted ONNX identity and browser/WASM parity proven; integrated product/mobile validation outstanding |
 | Release / Deployment | UNKNOWN | No Cloudflare deployment evidence; ORT WASM static-asset size constraint identified |
 | Maintenance / Operations | NOT_APPLICABLE | MVP phase; evolution path only |
 | Judgment / Material Decisions | PROVEN | Approved Definition and DESIGN → BUILD Human Gate in project Drive |
@@ -75,6 +75,25 @@ This proves reference-family browser portability, not welding task-model quality
 - promoted classes remain `spatter` + `slag inclusion`
 - durable evidence: `docs/evidence/B4_MODEL_PROMOTION.md` plus Drive `B4` JSON artifacts
 - image-level FP/FN examples were not persisted by the one-shot runner; B7 independent phone/demo evidence must close that gap without rerunning the frozen test
+
+### B4.3 — promoted ONNX artifact and browser parity
+- status: **TECHNICAL PASS**
+- tooling commit: `2853fe53335cd4ffcc769610145198fd4dfa6943`
+- ONNX artifact: `weld-yolox-nano-v0.1.onnx`
+- ONNX size: `3,653,900` bytes
+- ONNX SHA-256: `b5e980bf03113583a9a21600c3ee49a89daf2c76358fdcecf9c75db2bf7ee714`
+- opset: 11
+- input: `images` float32 `[1,3,416,416]`
+- output: `output` float32 `[1,3549,8]`
+- raw output decode in model: false
+- Python PyTorch → ONNX Runtime parity: PASS on `zero`, `fill114`, `ramp251`; max abs diff <= `9.18e-5`
+- ONNX Runtime Web/WASM parity: PASS on the same three deterministic patterns
+- Playwright promoted-model browser test: 1/1 PASS
+- final manifest: `model-manifest.v0.1.json`
+- final supported classes: `spatter`, `slag inclusion`
+- diagnostic-only: `undercut`
+- confidence/NMS remain frozen at 0.20 / 0.65
+- frozen test remains consumed and must not be rerun/tuned
 
 ## Delivery constraint evidence
 
