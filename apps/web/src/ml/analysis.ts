@@ -180,7 +180,11 @@ async function sha256Hex(bytes: Uint8Array): Promise<string> {
     throw new Error('Este navegador no permite verificar la identidad del modelo.')
   }
 
-  const digest = await globalThis.crypto.subtle.digest('SHA-256', bytes)
+  const stableBytes = new Uint8Array(bytes)
+  const digest = await globalThis.crypto.subtle.digest(
+    'SHA-256',
+    stableBytes.buffer,
+  )
   return Array.from(new Uint8Array(digest))
     .map((value) => value.toString(16).padStart(2, '0'))
     .join('')
