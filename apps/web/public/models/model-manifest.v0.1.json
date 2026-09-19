@@ -1,0 +1,39 @@
+{
+  "stage": "B4_PROMOTED_MODEL_V0_1",
+  "modelId": "weld-yolox-nano",
+  "modelVersion": "0.1.0",
+  "artifactPath": "/models/weld-yolox-nano-v0.1.onnx",
+  "artifactSha256": "b5e980bf03113583a9a21600c3ee49a89daf2c76358fdcecf9c75db2bf7ee714",
+  "artifactBytes": 3653900,
+  "architectureFamily": "YOLOX-Nano",
+  "inputWidth": 416,
+  "inputHeight": 416,
+  "inputTensorName": "images",
+  "inputDtype": "float32",
+  "inputLayout": "NCHW",
+  "outputTensorNames": ["output"],
+  "outputTensorShapes": {"output": [1, 3549, 8]},
+  "rawOutputDecodedInModel": false,
+  "classMap": {
+    "0": "slag inclusion",
+    "1": "spatter",
+    "2": "undercut"
+  },
+  "supportedClasses": ["spatter", "slag inclusion"],
+  "diagnosticOnlyClasses": ["undercut"],
+  "confidenceThreshold": 0.2,
+  "nmsThreshold": 0.65,
+  "preprocessingVersion": "yolox-val-416-v1",
+  "postprocessingVersion": "yolox-raw-adapter-v1",
+  "checkpointSha256": "7e5cd8915262a0f912de33a04262e7fab7b984badf70cf2f92f1a38fbac7fb8b",
+  "candidateManifestSha256": "a78d393a623708b59594a2df5bc6073e7c830fe36db8ab0332e811da054c64fb",
+  "toolingCommit": "2853fe53335cd4ffcc769610145198fd4dfa6943",
+  "limitations": [
+    "Educational prototype only; not weld certification or NDT.",
+    "Undercut is not a supported v0.1 class.",
+    "Canonical dataset contains no true negative/background images.",
+    "Independent phone-image sanity evidence is still required in B7.",
+    "Held-out test performance is materially lower than validation; reported metrics must be presented as measured.",
+    "Representative FP/FN visual examples were not persisted by the one-shot test runner and remain an explicit B7 evidence task."
+  ]
+}
