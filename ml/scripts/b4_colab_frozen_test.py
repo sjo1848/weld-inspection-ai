@@ -58,7 +58,7 @@ def main() -> None:
         raise SystemExit("B4.1 frozen candidate manifest is missing")
 
     project_sha = clone_project()
-    yolox_data_root = prepare_dataset()
+    yolox_data_root = prepare_dataset("test")
     prepare_yolox()
 
     sys.path.insert(0, str(PROJECT / "ml/src"))
