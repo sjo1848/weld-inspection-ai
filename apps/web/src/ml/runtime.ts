@@ -9,8 +9,10 @@ export interface RuntimeSession {
   warnings: string[]
 }
 
+export type RuntimeModelSource = string | Uint8Array
+
 export async function createRuntimeSession(
-  modelUrl: string,
+  modelUrl: RuntimeModelSource,
   preference: RuntimePreference = 'auto',
 ): Promise<RuntimeSession> {
   const warnings: string[] = []
@@ -44,12 +46,17 @@ export async function createRuntimeSession(
 }
 
 function createSession(
-  modelUrl: string,
+  modelUrl: RuntimeModelSource,
   provider: RuntimeProvider,
 ): Promise<ort.InferenceSession> {
-  return ort.InferenceSession.create(modelUrl, {
+  const options: ort.InferenceSession.SessionOptions = {
     executionProviders: [provider],
-  })
+  }
+
+  if (typeof modelUrl === 'string') {
+    return ort.InferenceSession.create(modelUrl, options)
+  }
+  return ort.InferenceSession.create(modelUrl, options)
 }
 
 function hasWebGpu(): boolean {
