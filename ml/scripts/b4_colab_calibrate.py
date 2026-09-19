@@ -309,9 +309,25 @@ def evaluate_threshold(coco_gt, output_data: dict, threshold: float) -> dict:
 
 
 def main() -> None:
+    print("B4.1 preflight")
+    print("Python:", sys.version)
+    print("Torch:", torch.__version__)
+    print("CUDA available:", torch.cuda.is_available())
+    if torch.cuda.is_available():
+        print("GPU:", torch.cuda.get_device_name(0))
+    print("Expected B3 archive:", ARCHIVE)
+    print("Archive exists:", ARCHIVE.exists())
+    print("Expected B3 checkpoint:", BEST_CKPT)
+    print("Checkpoint exists:", BEST_CKPT.exists())
+
     drive.mount("/content/drive")
     DRIVE_B4.mkdir(parents=True, exist_ok=True)
+
+    print("Archive exists after Drive mount:", ARCHIVE.exists())
+    print("Checkpoint exists after Drive mount:", BEST_CKPT.exists())
     assert torch.cuda.is_available(), "B4.1 requires a CUDA GPU runtime"
+    assert ARCHIVE.exists(), f"Missing persistent B3 dataset archive: {ARCHIVE}"
+    assert BEST_CKPT.exists(), f"Missing B3 best checkpoint: {BEST_CKPT}"
 
     project_sha = clone_project()
     yolox_data_root = prepare_dataset("val")
