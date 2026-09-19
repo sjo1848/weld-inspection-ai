@@ -1,0 +1,113 @@
+name: ci
+
+on:
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  bootstrap:
+    name: B0 bootstrap checks
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Checkout exact candidate
+        uses: actions/checkout@v7
+
+      - name: Set up Python 3.11
+        uses: actions/setup-python@v7
+        with:
+          python-version: '3.11'
+          cache: pip
+
+      - name: Install Python package and dev tools
+        run: python -m pip install -e '.[dev]'
+
+      - name: Run Python tests
+        run: pytest
+
+      - name: Run Python lint
+        run: ruff check .
+
+      - name: Set up Node 20
+        uses: actions/setup-node@v6
+        with:
+          node-version: '20'
+          package-manager-cache: false
+
+      - name: Activate pinned pnpm
+        run: |
+          corepack enable
+          corepack prepare pnpm@10.15.1 --activate
+          pnpm --version
+
+      - name: Install web dependencies
+        run: pnpm install --no-frozen-lockfile
+
+      - name: Type-check web workspace
+        run: pnpm web:typecheck
+
+      - name: Run B5 web unit and component tests
+        run: pnpm web:test
+
+      - name: Build web workspace
+        run: pnpm web:build
+
+      - name: Prepare B6 Cloudflare static/R2 asset split
+        run: pnpm --filter @weld-inspection-ai/web prepare:cloudflare
+
+      - name: Validate B6 Worker bundle with Wrangler dry-run
+        run: pnpm --filter @weld-inspection-ai/web cloudflare:dry-run
+
+  b2-portability:
+    name: B2 YOLOX-Nano ORT Web/WASM portability
+    needs: bootstrap
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Checkout exact candidate
+        uses: actions/checkout@v7
+
+      - name: Set up Node 20
+        uses: actions/setup-node@v6
+        with:
+          node-version: '20'
+          package-manager-cache: false
+
+      - name: Activate pinned pnpm
+        run: |
+          corepack enable
+          corepack prepare pnpm@10.15.1 --activate
+          pnpm --version
+
+      - name: Install web dependencies
+        run: pnpm install --no-frozen-lockfile
+
+      - name: Acquire official YOLOX-Nano ONNX reference artifact
+        env:
+          MODEL_URL: https://github.com/Megvii-BaseDetection/YOLOX/releases/download/0.1.1rc0/yolox_nano.onnx
+          EXPECTED_BYTES: '3659407'
+        run: |
+          mkdir -p apps/web/public/models
+          curl -L --fail --retry 3 --retry-delay 2 "$MODEL_URL" \
+            --output apps/web/public/models/yolox_nano-coco-ref.onnx
+          ACTUAL_BYTES="$(stat -c%s apps/web/public/models/yolox_nano-coco-ref.onnx)"
+          echo "B2_MODEL_BYTES=$ACTUAL_BYTES"
+          test "$ACTUAL_BYTES" = "$EXPECTED_BYTES"
+          echo "B2_MODEL_SHA256=$(sha256sum apps/web/public/models/yolox_nano-coco-ref.onnx | cut -d' ' -f1)"
+
+      - name: Build multi-page portability candidate
+        run: pnpm web:build
+
+      - name: Verify system Chrome
+        run: google-chrome --version
+
+      - name: Execute browser portability proof
+        run: pnpm --filter @weld-inspection-ai/web test:portability

@@ -1,0 +1,46 @@
+# Python
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.ruff_cache/
+.venv/
+.venv*/
+dist/
+build/
+*.egg-info/
+
+# Node
+node_modules/
+.pnpm-store/
+apps/web/dist/
+
+# ML/data artifacts (provenance manifests stay versioned; raw data and weights do not)
+data/raw/
+data/interim/
+data/processed/
+data/materialized/
+data/yolox/
+artifacts/models/*.pt
+artifacts/models/*.pth
+artifacts/models/*.onnx
+artifacts/checkpoints/
+apps/web/public/models/*.onnx
+runs/
+
+# Canonical dataset bytes and local inspection/materialization handoffs
+Annotated-Image-Dataset-for-Shielded-Metal-Arc-Wel.zip
+weld-dataset/
+contenido.txt
+dataset-files.txt
+dataset-sha256.txt
+weld-v0.1-materialized.tar.gz
+
+# Environment / secrets
+.env
+.env.*
+!.env.example
+
+# Editors / OS
+.vscode/
+.idea/
+.DS_Store

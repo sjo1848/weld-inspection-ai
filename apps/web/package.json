@@ -1,0 +1,36 @@
+{
+  "name": "@weld-inspection-ai/web",
+  "private": true,
+  "version": "0.1.0",
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "vue-tsc --noEmit && vite build",
+    "preview": "vite preview",
+    "typecheck": "vue-tsc --noEmit",
+    "test:portability": "playwright test tests/portability.spec.ts --config=playwright.config.ts",
+    "test:promoted": "playwright test tests/promoted-portability.spec.ts --config=playwright.promoted.config.ts",
+    "test:unit": "vitest run tests/App.spec.ts tests/preprocess.spec.ts tests/yolox.spec.ts tests/b6-worker.spec.ts",
+    "test:b5-reference": "playwright test tests/b5-reference-path.spec.ts --config=playwright.b5.config.ts",
+    "prepare:cloudflare": "node scripts/prepare-cloudflare-assets.mjs",
+    "build:cloudflare": "pnpm build && pnpm prepare:cloudflare",
+    "r2:upload-runtime": "node scripts/upload-runtime-r2.mjs",
+    "cloudflare:dry-run": "wrangler deploy --dry-run --outdir .deploy/worker-dry-run",
+    "deploy:cloudflare": "node scripts/stage-promoted-model.mjs && pnpm build:cloudflare && pnpm r2:upload-runtime && wrangler deploy"
+  },
+  "dependencies": {
+    "onnxruntime-web": "^1.20.1",
+    "vue": "^3.5.13"
+  },
+  "devDependencies": {
+    "@playwright/test": "^1.55.0",
+    "@vitejs/plugin-vue": "^5.2.1",
+    "typescript": "^5.7.2",
+    "vite": "^6.1.0",
+    "vue-tsc": "^2.2.0",
+    "@vue/test-utils": "^2.4.6",
+    "jsdom": "^26.1.0",
+    "vitest": "^3.2.4",
+    "wrangler": "4.86.0"
+  }
+}
