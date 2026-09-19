@@ -54,6 +54,9 @@ jobs:
       - name: Type-check web workspace
         run: pnpm web:typecheck
 
+      - name: Run B5 web unit and component tests
+        run: pnpm web:test
+
       - name: Build web workspace
         run: pnpm web:build
 
