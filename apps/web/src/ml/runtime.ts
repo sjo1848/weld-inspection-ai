@@ -1,4 +1,4 @@
-import * as ort from 'onnxruntime-web'
+import * as ort from 'onnxruntime-web/wasm'
 
 export type RuntimeProvider = 'wasm'
 export type RuntimePreference = 'auto' | 'wasm'
