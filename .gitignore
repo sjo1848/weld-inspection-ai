@@ -25,6 +25,8 @@ artifacts/models/*.pth
 artifacts/models/*.onnx
 artifacts/checkpoints/
 apps/web/public/models/*.onnx
+apps/web/public/assets/ort-wasm-simd-threaded.wasm
+apps/web/public/assets/ort-wasm-simd-threaded.mjs
 runs/
 
 # Canonical dataset bytes and local inspection/materialization handoffs
