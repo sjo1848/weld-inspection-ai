@@ -1,4 +1,4 @@
-import * as ort from 'onnxruntime-web/webgpu'
+import * as ort from 'onnxruntime-web'
 
 import { createRuntimeSession, type RuntimePreference } from './ml/runtime'
 
@@ -131,7 +131,7 @@ function parseInputPattern(value: string | null): ProbePattern {
 }
 
 function parseProvider(value: string | null): RuntimePreference {
-  if (value === 'wasm' || value === 'webgpu') {
+  if (value === 'wasm') {
     return value
   }
   return 'auto'
