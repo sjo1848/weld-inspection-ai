@@ -16,7 +16,7 @@ Draft integration surface: PR #1
 | B3 Transfer learning candidate | **COMPLETE** | Fine-tune one bounded YOLOX-Nano baseline | 80/80 epochs + checkpoint SHA + validation evidence |
 | B4 Model promotion | **TECHNICAL PASS** | Export, parity-check and freeze task model contract | ONNX identity/hash + final manifest + Python/browser parity PASS |
 | B5 Thin client | **TECHNICAL PASS** | Implement P0 mobile journey | CI + real validation-image path + local-image privacy evidence PASS |
-| B6 Cloudflare delivery | **ACTIVE / REPOSITORY PREP PASS / HUMAN ACTION REQUIRED** | Publish static app/model/config | R2 seam + Wrangler dry-run PASS; remote account-bound upload/deploy next |
+| B6 Cloudflare delivery | **ACTIVE / WASM-ONLY SIMPLIFICATION IN VALIDATION** | Publish static app/model/config | R2 removed; validate assets-only build <=25 MiB and deploy |
 | B7 Validate MVP | PLANNED / NEGATIVE SANITY SET REQUIRED | Execute acceptance/evaluation layers | validation report + supported class set + independent phone sanity set |
 
 ## Current branch and candidate identity
@@ -120,19 +120,18 @@ B4 is closed as TECHNICAL PASS. This does not close the overall Build contract; 
 
 B5 is closed as TECHNICAL PASS. The false-negative observation is model-quality evidence for B7 and does not authorize retuning.
 
-## B6 repository delivery preparation
+## B6 v0.1 delivery simplification
 
-- current prepared head: `a4131e893c7dc8307b8c8f5c32725571cd5db03b`;
-- CI #91 SUCCESS;
-- exact generated oversized ORT WASM: `26,781,914` bytes;
-- runtime WASM SHA-256: `39f9f0894d478800487ed9f7dbe92618498db320cf55c8e3d89adff8dce658da`;
-- build step moves the oversized WASM out of Static Assets into R2 staging while preserving its URL key;
-- Worker selectively serves `/assets/*.wasm` from private R2 and falls through to `ASSETS` otherwise;
-- Wrangler deployment dry-run PASS;
-- B2 Chrome/WASM regression PASS;
-- Wrangler pinned to 4.86.0 to preserve Node 20 compatibility.
+- owner approved WASM-only v0.1 to remove the R2 dependency;
+- runtime import changed from `onnxruntime-web/webgpu` to standard `onnxruntime-web`;
+- execution provider is WASM only;
+- WebGPU is deferred to post-v0.1 performance work;
+- R2 binding, custom Worker route, upload script and Worker seam tests were removed;
+- Wrangler config is now assets-only Static Assets;
+- build tooling records all static asset sizes/hashes and hard-fails above 25 MiB;
+- promoted ONNX/checkpoint/thresholds/classes remain unchanged.
 
-Remote deployment is not yet evidence-backed because it requires Cloudflare account authorization and R2 bucket access.
+The new WASM-only candidate must still pass CI asset-size, Wrangler dry-run and browser portability evidence before B6 remote deployment.
 
 ## Delivery finding
 
@@ -147,17 +146,13 @@ The B2 Vite build emits an ORT Web WASM runtime asset at approximately 26.8 MB, 
 
 ## Next authorized action
 
-B6 repository preparation is complete. The next step is an external Human Action because this runtime has no authorized Cloudflare account session:
+Validate the new v0.1 WASM-only B6 candidate. Required before deployment:
+1. TypeScript/tests/build PASS;
+2. generated standard ORT WASM and every other static asset <=25 MiB;
+3. assets-only Wrangler dry-run PASS;
+4. B2 Chrome/WASM portability regression PASS.
 
-1. authenticate Wrangler against the user's Cloudflare account;
-2. ensure R2 is activated;
-3. create the Standard bucket `weld-vision-runtime` if it does not exist;
-4. stage the exact promoted ONNX using `WELD_VISION_MODEL_PATH`;
-5. execute the prepared deployment flow, which uploads the oversized runtime WASM to R2 and deploys the Worker + Static Assets;
-6. capture the resulting workers.dev deployment URL;
-7. run deployed asset and real-image smoke evidence before B6 closure.
-
-No threshold/model/class change is authorized.
+If those pass, deploy the exact promoted ONNX through Cloudflare Static Assets. R2 is no longer required.
 
 ## Stop condition
 
