@@ -3,7 +3,7 @@
 Project: WELD-VISION-001 — Weld Inspection AI — FALDEO  
 Phase: BUILD  
 Authority: HG-WV-002 Option A + WV-TC-BUILD-001  
-Status: B6 ACTIVE / B5 TECHNICAL PASS / NO NEW HUMAN GATE
+Status: B6 ACTIVE / B5 TECHNICAL PASS / v0.1 WASM-ONLY DELIVERY
 
 ## 1. Purpose
 
@@ -11,76 +11,71 @@ Deploy the B5 browser application on Cloudflare without changing the client-side
 
 ## 2. Proven entry state
 
-- B5 implementation commit: `fe79d5cbf7d0756b098a015f7c40eda3e263326b`
-- CI #85: SUCCESS
-- B5 real-image reference path: PASS
-- B5 privacy evidence: 0 non-read requests / 0 request bodies
+- B5: TECHNICAL PASS
 - promoted ONNX: `weld-yolox-nano-v0.1.onnx`
 - ONNX SHA-256: `b5e980bf03113583a9a21600c3ee49a89daf2c76358fdcecf9c75db2bf7ee714`
-- frozen test remains consumed; B6 must not alter model thresholds/classes/checkpoint
+- B5 already completed real-image inference through ONNX Runtime Web/WASM
+- frozen test remains consumed
+- thresholds/classes/checkpoint remain frozen
 
-## 3. Delivery constraint
+## 3. v0.1 delivery decision
 
-Cloudflare Workers Static Assets currently limits an individual static asset to 25 MiB.
+For v0.1, the browser runtime is **WASM-only**.
 
-The Vite/ORT WebGPU build emits an ONNX Runtime Web WASM binary at approximately 26.8 MB. That file cannot be uploaded as a normal Worker Static Asset.
+The prior WebGPU-capable bundle emitted an asyncify/JSEP-oriented WASM asset larger than Cloudflare Workers Static Assets' 25 MiB individual-file limit. The project owner approved simplifying v0.1 to the standard ONNX Runtime Web WASM execution provider.
 
-## 4. Approved B6 seam
+Consequences:
+- import `onnxruntime-web`, not `onnxruntime-web/webgpu`;
+- execution provider is `wasm`;
+- no WebGPU attempt/fallback path in v0.1;
+- no R2 bucket;
+- no Worker R2 route;
+- no external CDN runtime dependency;
+- HTML/JS/CSS/manifest/ONNX/ORT WASM all deploy as Cloudflare Static Assets.
 
-Use one Cloudflare Worker with:
-- Static Assets for HTML/JS/CSS/model/manifest and all files <=25 MiB;
-- one private R2 Standard bucket bound as `RUNTIME_BUCKET`;
-- the oversized generated ORT WASM object stored in R2 under the same URL path/key used by the generated JS bundle;
-- selective `assets.run_worker_first` for `/assets/*.wasm`;
-- Worker code that reads that key from R2 and streams it back as `application/wasm`;
-- fallback to `env.ASSETS.fetch(request)` for any WASM path not present in R2.
+WebGPU remains a post-v0.1 optimization candidate only after measured mobile latency justifies reintroducing it.
 
-This keeps the browser request same-origin and avoids a public-bucket/CORS dependency.
+## 4. Cloudflare delivery
 
-## 5. Cost boundary
+Use an assets-only Cloudflare Worker deployment:
+- `assets.directory = ./dist`;
+- SPA fallback enabled;
+- no Worker script is required;
+- no R2 binding is required.
 
-R2 Standard is the only storage class authorized for this seam.
+The build gate must fail if any generated asset exceeds 25 MiB.
 
-The runtime object is far below the current 10 GB-month free storage allocation. The MVP must stay inside free-tier operational usage; no paid optimization or external inference service is authorized.
+## 5. Required B6 evidence
 
-## 6. Build/deploy mechanics
+Before remote deployment:
+- TypeScript/tests/build PASS;
+- B2 browser WASM portability regression PASS;
+- production build records exact generated static asset sizes/hashes;
+- largest generated file is <=25 MiB;
+- Wrangler assets-only deployment dry-run PASS.
 
-Cloudflare build preparation must:
-1. stage the exact promoted ONNX after SHA verification;
-2. run the production Vite build;
-3. identify generated WASM assets larger than 25 MiB;
-4. move those files out of `dist` into a deployment staging directory while preserving their relative URL key;
-5. emit a machine-readable runtime-asset manifest with path, bytes and SHA-256;
-6. assert that no file remaining in `dist` exceeds 25 MiB;
-7. upload the staged WASM object(s) to the bound R2 bucket;
-8. deploy the Worker + remaining Static Assets.
+Remote B6 closure additionally requires:
+- exact promoted ONNX staged and SHA-verified;
+- successful Workers Static Assets deployment;
+- real workers.dev URL;
+- remote manifest/ONNX/WASM GET PASS;
+- remote ONNX SHA verification;
+- browser smoke through deployed origin;
+- one validation-image analysis through deployed origin;
+- proof that user image remains local.
 
-## 7. Required evidence
+## 6. Forbidden actions
 
-B6 can close only with:
-- deterministic delivery-preparation test;
-- Worker route unit test;
-- exact oversized runtime asset bytes/SHA/key recorded;
-- no >25 MiB object remaining in Static Assets payload;
-- successful R2 object upload identity;
-- successful Worker deployment URL/identity;
-- deployed GET of app, manifest, ONNX and R2-backed WASM;
-- browser smoke test through the deployed origin;
-- one real-image deployed analysis with explicit WASM fallback allowed;
-- proof that user image remains local after deployment.
-
-## 8. Forbidden actions
-
-- no server-side model inference;
-- no image upload to Worker/R2;
-- no model/threshold/class changes;
+- no server-side inference;
+- no image upload/persistence;
+- no R2 dependency in v0.1;
+- no threshold/class/checkpoint modification;
 - no frozen-test reuse;
-- no public write route to R2;
-- no deployment that silently omits the exact promoted ONNX;
-- no claim that deployment quality resolves B7 model-quality limitations.
+- no substitution of the promoted ONNX;
+- no certification/pass-fail claim.
 
-## 9. Stop condition
+## 7. Stop condition
 
-Repository preparation and local/CI verification proceed autonomously.
+Repository/CI preparation proceeds autonomously.
 
-External Cloudflare authentication, initial R2 subscription activation if absent, bucket creation, or account-bound deployment credentials are Human Actions when the runtime cannot perform them directly.
+Remote Cloudflare login and providing the exact promoted ONNX file on the deployment machine remain Human Actions when required.
