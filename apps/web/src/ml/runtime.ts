@@ -15,9 +15,14 @@ export async function createRuntimeSession(
   modelUrl: RuntimeModelSource,
   _preference: RuntimePreference = 'auto',
 ): Promise<RuntimeSession> {
-  const session = await ort.InferenceSession.create(modelUrl, {
+  const options: ort.InferenceSession.SessionOptions = {
     executionProviders: ['wasm'],
-  })
+  }
+
+  const session =
+    typeof modelUrl === 'string'
+      ? await ort.InferenceSession.create(modelUrl, options)
+      : await ort.InferenceSession.create(modelUrl, options)
 
   return {
     session,
