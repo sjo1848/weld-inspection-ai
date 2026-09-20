@@ -8,7 +8,7 @@ This file indexes durable evidence. It is not a second source of truth for proje
 | Design | PROVEN | `WV-ARCH-001`, `WV-ADR-001`, `WV-ML-001`, `WV-RTC-001`, `WV-WF-001`, and `WV-DR-001` in project Drive |
 | Implementation | PARTIAL | B0/B1/B2 technical PASS; B3 training complete; B4 and B5 TECHNICAL PASS; B6 repository delivery seam CI PASS, remote deployment pending |
 | Validation | PARTIAL | source-aware split, frozen-test metrics, promoted ONNX identity/parity and B5 real-image integrated path proven; independent phone/mobile validation outstanding |
-| Release / Deployment | PARTIAL | Cloudflare static/R2 seam prepared and Wrangler dry-run PASS; account-bound R2 upload/deploy/smoke evidence pending |
+| Release / Deployment | PARTIAL | v0.1 simplified to WASM-only assets-only Cloudflare deployment; R2 removed; final asset-size/dry-run/deploy evidence pending |
 | Maintenance / Operations | NOT_APPLICABLE | MVP phase; evolution path only |
 | Judgment / Material Decisions | PROVEN | Approved Definition and DESIGN → BUILD Human Gate in project Drive |
 
@@ -108,20 +108,15 @@ This proves reference-family browser portability, not welding task-model quality
 - integrated result: 0 detections on a validation image chosen from the supported-class GT set; retained as an explicit false-negative example, not used for tuning
 - durable evidence: `docs/evidence/B5_THIN_CLIENT.md` and Drive `WELD-VISION-001/B5`
 
-### B6 — Cloudflare delivery seam preparation
-- status: **REPOSITORY/CI PASS; REMOTE DEPLOY PENDING**
-- validated prep commit: `a4131e893c7dc8307b8c8f5c32725571cd5db03b`
-- GitHub Actions CI #91: SUCCESS
-- Workers Static Assets max-file constraint handled by moving oversized generated ORT WASM to R2 staging
-- oversized runtime asset: `assets/ort-wasm-simd-threaded.asyncify-D5D0fo7z.wasm`
-- bytes: `26,781,914`
-- SHA-256: `39f9f0894d478800487ed9f7dbe92618498db320cf55c8e3d89adff8dce658da`
-- Worker selectively intercepts `/assets/*.wasm` and streams matching R2 object same-origin
-- static assets remain under Cloudflare's 25 MiB per-file ceiling after preparation
-- Worker seam unit tests: PASS
-- Wrangler deployment dry-run: PASS
-- B2 Chrome/WASM portability regression: PASS
-- remote R2 bucket creation/upload and actual Workers deployment require account-bound Cloudflare authorization
+### B6 — Cloudflare delivery simplification
+- prior R2 seam was technically valid but superseded by owner-approved v0.1 simplification
+- v0.1 runtime is now standard `onnxruntime-web` WASM-only
+- WebGPU is deferred to post-v0.1 optimization
+- R2/custom Worker routing removed
+- target deployment is assets-only Cloudflare Workers Static Assets
+- build tooling now fails if any generated file exceeds 25 MiB
+- exact promoted ONNX identity remains unchanged
+- final generated WASM size/hash, Wrangler dry-run and remote deploy evidence are pending on the new WASM-only head
 
 ## Delivery constraint evidence
 
