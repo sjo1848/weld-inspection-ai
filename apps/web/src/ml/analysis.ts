@@ -1,4 +1,4 @@
-import * as ort from 'onnxruntime-web'
+import * as ort from 'onnxruntime-web/wasm'
 
 import { loadModelManifest, type ModelManifest } from './manifest'
 import { preprocessCanvasSource } from './preprocess'
