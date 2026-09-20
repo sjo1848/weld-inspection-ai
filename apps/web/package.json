@@ -18,7 +18,7 @@
     "deploy:cloudflare": "node scripts/stage-promoted-model.mjs && pnpm build:cloudflare && wrangler deploy"
   },
   "dependencies": {
-    "onnxruntime-web": "^1.20.1",
+    "onnxruntime-web": "1.20.1",
     "vue": "^3.5.13"
   },
   "devDependencies": {
