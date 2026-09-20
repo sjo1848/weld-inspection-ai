@@ -60,10 +60,10 @@ jobs:
       - name: Build web workspace
         run: pnpm web:build
 
-      - name: Prepare B6 Cloudflare static/R2 asset split
+      - name: Verify B6 Cloudflare static asset ceiling
         run: pnpm --filter @weld-inspection-ai/web prepare:cloudflare
 
-      - name: Validate B6 Worker bundle with Wrangler dry-run
+      - name: Validate B6 assets-only deployment with Wrangler dry-run
         run: pnpm --filter @weld-inspection-ai/web cloudflare:dry-run
 
   b2-portability:
