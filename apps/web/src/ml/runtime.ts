@@ -11,6 +11,11 @@ export interface RuntimeSession {
 
 export type RuntimeModelSource = string | Uint8Array
 
+ort.env.wasm.wasmPaths = {
+  wasm: '/assets/ort-wasm-simd-threaded.wasm',
+  mjs: '/assets/ort-wasm-simd-threaded.mjs',
+}
+
 export async function createRuntimeSession(
   modelUrl: RuntimeModelSource,
   _preference: RuntimePreference = 'auto',
