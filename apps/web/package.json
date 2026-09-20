@@ -10,13 +10,12 @@
     "typecheck": "vue-tsc --noEmit",
     "test:portability": "playwright test tests/portability.spec.ts --config=playwright.config.ts",
     "test:promoted": "playwright test tests/promoted-portability.spec.ts --config=playwright.promoted.config.ts",
-    "test:unit": "vitest run tests/App.spec.ts tests/preprocess.spec.ts tests/yolox.spec.ts tests/b6-worker.spec.ts",
+    "test:unit": "vitest run tests/App.spec.ts tests/preprocess.spec.ts tests/yolox.spec.ts",
     "test:b5-reference": "playwright test tests/b5-reference-path.spec.ts --config=playwright.b5.config.ts",
     "prepare:cloudflare": "node scripts/prepare-cloudflare-assets.mjs",
     "build:cloudflare": "pnpm build && pnpm prepare:cloudflare",
-    "r2:upload-runtime": "node scripts/upload-runtime-r2.mjs",
     "cloudflare:dry-run": "wrangler deploy --dry-run --outdir .deploy/worker-dry-run",
-    "deploy:cloudflare": "node scripts/stage-promoted-model.mjs && pnpm build:cloudflare && pnpm r2:upload-runtime && wrangler deploy"
+    "deploy:cloudflare": "node scripts/stage-promoted-model.mjs && pnpm build:cloudflare && wrangler deploy"
   },
   "dependencies": {
     "onnxruntime-web": "^1.20.1",
