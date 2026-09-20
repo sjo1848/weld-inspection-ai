@@ -4,8 +4,8 @@
   "version": "0.1.0",
   "type": "module",
   "scripts": {
-    "dev": "vite",
-    "build": "vue-tsc --noEmit && vite build",
+    "dev": "node scripts/stage-ort-wasm.mjs && vite",
+    "build": "node scripts/stage-ort-wasm.mjs && vue-tsc --noEmit && vite build",
     "preview": "vite preview",
     "typecheck": "vue-tsc --noEmit",
     "test:portability": "playwright test tests/portability.spec.ts --config=playwright.config.ts",
