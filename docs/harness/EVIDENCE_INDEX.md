@@ -6,9 +6,9 @@ This file indexes durable evidence. It is not a second source of truth for proje
 | --- | --- | --- |
 | Problem | PROVEN | `WV-REQ-001 — MVP Requirements Baseline v0.1` in project Drive |
 | Design | PROVEN | `WV-ARCH-001`, `WV-ADR-001`, `WV-ML-001`, `WV-RTC-001`, `WV-WF-001`, and `WV-DR-001` in project Drive |
-| Implementation | PARTIAL | B0/B1/B2 technical PASS; B3 training complete; B4 and B5 TECHNICAL PASS; B6 repository delivery seam CI PASS, remote deployment pending |
+| Implementation | PARTIAL | B0/B1/B2 technical PASS; B3 training complete; B4/B5 TECHNICAL PASS; B6 remote deploy complete, deployed browser smoke pending |
 | Validation | PARTIAL | source-aware split, frozen-test metrics, promoted ONNX identity/parity and B5 real-image integrated path proven; independent phone/mobile validation outstanding |
-| Release / Deployment | PARTIAL | v0.1 simplified to WASM-only assets-only Cloudflare deployment; R2 removed; final asset-size/dry-run/deploy evidence pending |
+| Release / Deployment | PARTIAL | WASM-only assets-only deployment live on workers.dev; remote manifest/ONNX identity PASS; deployed browser/privacy smoke pending |
 | Maintenance / Operations | NOT_APPLICABLE | MVP phase; evolution path only |
 | Judgment / Material Decisions | PROVEN | Approved Definition and DESIGN → BUILD Human Gate in project Drive |
 
@@ -108,15 +108,22 @@ This proves reference-family browser portability, not welding task-model quality
 - integrated result: 0 detections on a validation image chosen from the supported-class GT set; retained as an explicit false-negative example, not used for tuning
 - durable evidence: `docs/evidence/B5_THIN_CLIENT.md` and Drive `WELD-VISION-001/B5`
 
-### B6 — Cloudflare delivery simplification
-- prior R2 seam was technically valid but superseded by owner-approved v0.1 simplification
-- v0.1 runtime is now standard `onnxruntime-web` WASM-only
-- WebGPU is deferred to post-v0.1 optimization
-- R2/custom Worker routing removed
-- target deployment is assets-only Cloudflare Workers Static Assets
-- build tooling now fails if any generated file exceeds 25 MiB
-- exact promoted ONNX identity remains unchanged
-- final generated WASM size/hash, Wrangler dry-run and remote deploy evidence are pending on the new WASM-only head
+### B6 — Cloudflare deployment
+- status: **REMOTE DEPLOY PASS / BROWSER SMOKE PENDING**
+- deployed checkpoint: `8ca900ab0bf4164ba793a3adaeedbf9d47f5817e`
+- predeploy CI #107: SUCCESS
+- workers.dev: `https://weld-inspection-ai.sjo1848.workers.dev`
+- Cloudflare version ID: `da7a9f51-e932-4ba5-8e93-09925c82c6a5`
+- assets: 10
+- runtime: WASM-only / ORT Web 1.20.1
+- R2/WebGPU: not used
+- standard WASM: 11,246,032 bytes / SHA-256 `207d02be4591c156b0a98f024f3d58005b5b04c92274d759fb390338c63559ea`
+- Cloudflare 25 MiB static-asset gate: PASS
+- assets-only Wrangler dry-run: PASS
+- remote manifest and promoted ONNX identity: PASS
+- remote ONNX: 3,653,900 bytes / SHA-256 `b5e980bf03113583a9a21600c3ee49a89daf2c76358fdcecf9c75db2bf7ee714`
+- deployed Chromium/inference/privacy smoke remains outstanding
+- durable deployment evidence: `docs/evidence/B6_CLOUDFLARE_DELIVERY.md`
 
 ## Delivery constraint evidence
 
@@ -124,7 +131,7 @@ The B2 production build emitted an ONNX Runtime Web WASM file at approximately 2
 
 ## Required Build evidence still outstanding
 
-- B6: remote R2 object identity, Cloudflare deployment identity and deployed browser smoke evidence.
+- B6: deployed browser/inference/privacy smoke evidence on the live workers.dev origin.
 - B7: final validation report, supported class set, known limitations and independent negative/background phone sanity evidence.
 - Independent Critic / Integration Review as required by the active FALDEO contract before overall technical completion.
 
