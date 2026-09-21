@@ -16,7 +16,7 @@ Draft integration surface: PR #1
 | B3 Transfer learning candidate | **COMPLETE** | Fine-tune one bounded YOLOX-Nano baseline | 80/80 epochs + checkpoint SHA + validation evidence |
 | B4 Model promotion | **TECHNICAL PASS** | Export, parity-check and freeze task model contract | ONNX identity/hash + final manifest + Python/browser parity PASS |
 | B5 Thin client | **TECHNICAL PASS** | Implement P0 mobile journey | CI + real validation-image path + local-image privacy evidence PASS |
-| B6 Cloudflare delivery | **ACTIVE / WASM-ONLY SIMPLIFICATION IN VALIDATION** | Publish static app/model/config | R2 removed; validate assets-only build <=25 MiB and deploy |
+| B6 Cloudflare delivery | **ACTIVE / REMOTE DEPLOY PASS / BROWSER SMOKE PENDING** | Publish static app/model/config | live workers.dev + remote ONNX identity PASS; deployed browser/privacy smoke next |
 | B7 Validate MVP | PLANNED / NEGATIVE SANITY SET REQUIRED | Execute acceptance/evaluation layers | validation report + supported class set + independent phone sanity set |
 
 ## Current branch and candidate identity
@@ -131,7 +131,7 @@ B5 is closed as TECHNICAL PASS. The false-negative observation is model-quality 
 - build tooling records all static asset sizes/hashes and hard-fails above 25 MiB;
 - promoted ONNX/checkpoint/thresholds/classes remain unchanged.
 
-The new WASM-only candidate must still pass CI asset-size, Wrangler dry-run and browser portability evidence before B6 remote deployment.
+CI #107 passed the WASM-only asset-size gate, Wrangler dry-run and Chrome/WASM portability. The same checkpoint is now live at `https://weld-inspection-ai.sjo1848.workers.dev` with Cloudflare version ID `da7a9f51-e932-4ba5-8e93-09925c82c6a5`. Remote manifest/ONNX identity was verified. B6 remains open only for deployed-origin browser/inference/privacy smoke.
 
 ## Delivery finding
 
@@ -146,13 +146,17 @@ The B2 Vite build emits an ORT Web WASM runtime asset at approximately 26.8 MB, 
 
 ## Next authorized action
 
-Validate the new v0.1 WASM-only B6 candidate. Required before deployment:
-1. TypeScript/tests/build PASS;
-2. generated standard ORT WASM and every other static asset <=25 MiB;
-3. assets-only Wrangler dry-run PASS;
-4. B2 Chrome/WASM portability regression PASS.
+Run the final B6 deployed-origin smoke against `https://weld-inspection-ai.sjo1848.workers.dev` using the known validation reference image `20230612_102253_jpg.rf.4f90896f91209d67275f4a262585942e.jpg`.
 
-If those pass, deploy the exact promoted ONNX through Cloudflare Static Assets. R2 is no longer required.
+Required evidence:
+1. Chromium loads the public app;
+2. ORT runtime initializes as WASM;
+3. the validation image completes analysis;
+4. runtime failure and zero-detection remain distinct;
+5. 0 non-read requests and 0 request bodies are observed for the selected image;
+6. frozen test used = false.
+
+If all pass, close B6 as TECHNICAL PASS and advance to B7.
 
 ## Stop condition
 
