@@ -3,7 +3,7 @@
 Project: WELD-VISION-001 — Weld Inspection AI — FALDEO  
 Phase: BUILD  
 Authority: HG-WV-002 Option A + WV-TC-BUILD-001  
-Status: B6 ACTIVE / B5 TECHNICAL PASS / v0.1 WASM-ONLY DELIVERY
+Status: B6 ACTIVE / REMOTE DEPLOY PASS / BROWSER SMOKE PENDING
 
 ## 1. Purpose
 
@@ -79,3 +79,14 @@ Remote B6 closure additionally requires:
 Repository/CI preparation proceeds autonomously.
 
 Remote Cloudflare login and providing the exact promoted ONNX file on the deployment machine remain Human Actions when required.
+
+## 8. Remote deployment checkpoint
+
+- deployed checkpoint: `8ca900ab0bf4164ba793a3adaeedbf9d47f5817e`
+- predeploy CI: #107 SUCCESS
+- workers.dev URL: `https://weld-inspection-ai.sjo1848.workers.dev`
+- Cloudflare version ID: `da7a9f51-e932-4ba5-8e93-09925c82c6a5`
+- assets published: 10
+- promoted ONNX remote identity: PASS, 3,653,900 bytes, SHA-256 `b5e980bf03113583a9a21600c3ee49a89daf2c76358fdcecf9c75db2bf7ee714`
+- runtime: WASM-only; R2/WebGPU not used
+- final closure item: deployed Chromium/inference/privacy smoke
