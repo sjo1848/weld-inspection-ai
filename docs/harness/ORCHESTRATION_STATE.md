@@ -17,7 +17,7 @@ Draft integration surface: PR #1
 | B4 Model promotion | **TECHNICAL PASS** | Export, parity-check and freeze task model contract | ONNX identity/hash + final manifest + Python/browser parity PASS |
 | B5 Thin client | **TECHNICAL PASS** | Implement P0 mobile journey | CI + real validation-image path + local-image privacy evidence PASS |
 | B6 Cloudflare delivery | **TECHNICAL PASS** | Publish static app/model/config | live workers.dev + exact remote assets + deployed browser/inference/privacy smoke PASS |
-| B7 Validate MVP | **ACTIVE / READY FOR INDEPENDENT VALIDATION** | Execute acceptance/evaluation layers | validation report + supported class set + independent phone/negative sanity set |
+| B7 Validate MVP | **ACTIVE / PARTIAL INPUT ACQUIRED / EXECUTION PENDING** | Execute acceptance/evaluation layers | 4 owner-captured phone images / 2 specimen groups acquired; structured runs + negative case pending |
 
 ## Current branch and candidate identity
 
@@ -148,7 +148,7 @@ The earlier WebGPU/JSEP bundle exceeded the 25 MiB Static Assets limit. B6 resol
 
 B6 deployed-origin smoke completed with Chromium/Playwright PASS. The validation image completed analysis on WASM, zero-detection remained distinct from runtime failure, privacy recorded 0 non-read requests and 0 request bodies, and frozen test used = false.
 
-B7 is now **ACTIVE / INDEPENDENT INPUT REQUIRED** under `docs/harness/B7_MVP_VALIDATION_CONTRACT.md`. Execute only with genuinely independent phone/domain evidence. Do not use dataset train/validation/test images as substitutes, and do not tune from B7 outcomes.
+B7 is now **ACTIVE / PARTIAL INPUT ACQUIRED / EXECUTION PENDING**. The owner supplied 4 genuinely independent phone captures across 2 specimen groups. Three images are correlated views of the same specimen and are grouped accordingly. One oblique view provides an unsupported-condition/domain-shift case. A true negative/no-target case and structured deployed-app runs remain pending. No B7 outcome may be used for tuning.
 
 ## Stop condition
 
