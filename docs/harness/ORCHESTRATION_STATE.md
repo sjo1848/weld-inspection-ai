@@ -131,11 +131,11 @@ B5 is closed as TECHNICAL PASS. The false-negative observation is model-quality 
 - build tooling records all static asset sizes/hashes and hard-fails above 25 MiB;
 - promoted ONNX/checkpoint/thresholds/classes remain unchanged.
 
-CI #107 passed the WASM-only asset-size gate, Wrangler dry-run and Chrome/WASM portability. The same checkpoint is now live at `https://weld-inspection-ai.sjo1848.workers.dev` with Cloudflare version ID `da7a9f51-e932-4ba5-8e93-09925c82c6a5`. Remote manifest/ONNX identity was verified. B6 remains open only for deployed-origin browser/inference/privacy smoke.
+CI #107 passed the WASM-only asset-size gate, Wrangler dry-run and Chrome/WASM portability. The same checkpoint is live at `https://weld-inspection-ai.sjo1848.workers.dev` with Cloudflare version ID `da7a9f51-e932-4ba5-8e93-09925c82c6a5`. Remote manifest/ONNX identity and deployed Chromium/inference/privacy smoke all passed. B6 is COMPLETE / TECHNICAL PASS.
 
-## Delivery finding
+## Delivery finding — resolved
 
-The B2 Vite build emits an ORT Web WASM runtime asset at approximately 26.8 MB, above Cloudflare Workers Static Assets' current 25 MiB per-file limit. B6 must either select a smaller compatible ORT WASM build or serve that runtime artifact through the already-allowed R2/CDN asset seam. This does not change the client-side inference boundary.
+The earlier WebGPU/JSEP bundle exceeded the 25 MiB Static Assets limit. B6 resolved this by freezing v0.1 to the standard ONNX Runtime Web 1.20.1 WASM-only entrypoint. The deployed WASM is 11,246,032 bytes, below the limit. R2/CDN routing is not part of v0.1.
 
 ## Assurance
 
@@ -148,7 +148,7 @@ The B2 Vite build emits an ORT Web WASM runtime asset at approximately 26.8 MB, 
 
 B6 deployed-origin smoke completed with Chromium/Playwright PASS. The validation image completed analysis on WASM, zero-detection remained distinct from runtime failure, privacy recorded 0 non-read requests and 0 request bodies, and frozen test used = false.
 
-B7 is now **ACTIVE / READY FOR INDEPENDENT VALIDATION**. Prepare, but do not execute automatically, the independent phone-image sanity set, negative/background images, domain-shift observations, supported-class behavior and known FP/FN evidence.
+B7 is now **ACTIVE / INDEPENDENT INPUT REQUIRED** under `docs/harness/B7_MVP_VALIDATION_CONTRACT.md`. Execute only with genuinely independent phone/domain evidence. Do not use dataset train/validation/test images as substitutes, and do not tune from B7 outcomes.
 
 ## Stop condition
 
