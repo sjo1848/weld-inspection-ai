@@ -3,7 +3,7 @@
 Project: WELD-VISION-001 — Weld Inspection AI — FALDEO  
 Phase: BUILD / VALIDATE HANDOFF  
 Authority: HG-WV-002 Option A + WV-TC-BUILD-001 + WV-EVAL-001  
-Status: **ACTIVE / INDEPENDENT INPUT REQUIRED**
+Status: **ACTIVE / PARTIAL INPUT ACQUIRED / EXECUTION PENDING**
 
 ## 1. Purpose
 
@@ -147,3 +147,16 @@ After B7 evidence is complete:
 3. only then consider the vertical slice technically complete.
 
 PR #1 remains draft/open until the required assurance and owner merge decision.
+
+## 11. Current independent-input checkpoint
+
+Owner-confirmed independent phone evidence is now available:
+- 4 phone captures;
+- 2 specimen groups;
+- 3 correlated views grouped under one specimen;
+- one oblique/perspective domain-shift case;
+- no true negative/no-target case yet.
+
+Canonical structured input manifest: `docs/evidence/artifacts/b7-independent-input-manifest.json`.
+
+A derived crop and manual result screenshot are retained only as diagnostic evidence and do not count toward the independent-photo target. Structured deployed-app execution remains pending.
