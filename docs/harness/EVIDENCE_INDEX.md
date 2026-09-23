@@ -7,7 +7,7 @@ This file indexes durable evidence. It is not a second source of truth for proje
 | Problem | PROVEN | `WV-REQ-001 — MVP Requirements Baseline v0.1` in project Drive |
 | Design | PROVEN | `WV-ARCH-001`, `WV-ADR-001`, `WV-ML-001`, `WV-RTC-001`, `WV-WF-001`, and `WV-DR-001` in project Drive |
 | Implementation | PARTIAL | B0/B1/B2 technical PASS; B3 training complete; B4/B5/B6 TECHNICAL PASS; B7 validation outstanding |
-| Validation | PARTIAL | source-aware split, frozen-test metrics, promoted ONNX identity/parity and B5 real-image integrated path proven; independent phone/mobile validation outstanding |
+| Validation | PARTIAL | prior validation layers proven; B7 now has 4 owner-captured phone images across 2 specimen groups, but structured execution and negative/no-target coverage remain outstanding |
 | Release / Deployment | PROVEN | WASM-only assets-only deployment live on workers.dev; remote manifest/ONNX/WASM identity PASS; deployed browser/inference/privacy smoke PASS |
 | Maintenance / Operations | NOT_APPLICABLE | MVP phase; evolution path only |
 | Judgment / Material Decisions | PROVEN | Approved Definition and DESIGN → BUILD Human Gate in project Drive |
@@ -138,7 +138,7 @@ The earlier WebGPU/JSEP-oriented runtime exceeded the Static Assets per-file cei
 
 ## Required Build evidence still outstanding
 
-- B7: execute `WV-TC-B7-001` with genuinely independent phone/domain evidence, then finalize validation report, supported-class statement and known limitations.
+- B7: 4 owner-captured phone images / 2 specimen groups are now registered. Execute structured deployed-app runs, add at least one negative/no-target case if practical, document domain-shift/FP/FN behavior, then finalize validation report and supported-class statement.
 - Independent Critic / Integration Review as required by the active FALDEO contract before overall technical completion.
 
 ## Claim boundary
