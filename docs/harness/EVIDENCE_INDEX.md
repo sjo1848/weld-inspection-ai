@@ -6,9 +6,9 @@ This file indexes durable evidence. It is not a second source of truth for proje
 | --- | --- | --- |
 | Problem | PROVEN | `WV-REQ-001 — MVP Requirements Baseline v0.1` in project Drive |
 | Design | PROVEN | `WV-ARCH-001`, `WV-ADR-001`, `WV-ML-001`, `WV-RTC-001`, `WV-WF-001`, and `WV-DR-001` in project Drive |
-| Implementation | PARTIAL | B0/B1/B2 technical PASS; B3 training complete; B4/B5 TECHNICAL PASS; B6 remote deploy complete, deployed browser smoke pending |
+| Implementation | PARTIAL | B0/B1/B2 technical PASS; B3 training complete; B4/B5/B6 TECHNICAL PASS; B7 validation outstanding |
 | Validation | PARTIAL | source-aware split, frozen-test metrics, promoted ONNX identity/parity and B5 real-image integrated path proven; independent phone/mobile validation outstanding |
-| Release / Deployment | PARTIAL | WASM-only assets-only deployment live on workers.dev; remote manifest/ONNX identity PASS; deployed browser/privacy smoke pending |
+| Release / Deployment | PROVEN | WASM-only assets-only deployment live on workers.dev; remote manifest/ONNX/WASM identity PASS; deployed browser/inference/privacy smoke PASS |
 | Maintenance / Operations | NOT_APPLICABLE | MVP phase; evolution path only |
 | Judgment / Material Decisions | PROVEN | Approved Definition and DESIGN → BUILD Human Gate in project Drive |
 
@@ -109,7 +109,7 @@ This proves reference-family browser portability, not welding task-model quality
 - durable evidence: `docs/evidence/B5_THIN_CLIENT.md` and Drive `WELD-VISION-001/B5`
 
 ### B6 — Cloudflare deployment
-- status: **REMOTE DEPLOY PASS / BROWSER SMOKE PENDING**
+- status: **TECHNICAL PASS**
 - deployed checkpoint: `8ca900ab0bf4164ba793a3adaeedbf9d47f5817e`
 - predeploy CI #107: SUCCESS
 - workers.dev: `https://weld-inspection-ai.sjo1848.workers.dev`
@@ -122,7 +122,14 @@ This proves reference-family browser portability, not welding task-model quality
 - assets-only Wrangler dry-run: PASS
 - remote manifest and promoted ONNX identity: PASS
 - remote ONNX: 3,653,900 bytes / SHA-256 `b5e980bf03113583a9a21600c3ee49a89daf2c76358fdcecf9c75db2bf7ee714`
-- deployed Chromium/inference/privacy smoke remains outstanding
+- deployed Chromium/inference/privacy smoke: **PASS**
+- reference partition: validation
+- reference image: `20230612_102253_jpg.rf.4f90896f91209d67275f4a262585942e.jpg`
+- runtime: WASM
+- detection count: 0; zero result: true; runtime error: absent
+- privacy: 9 total requests, 0 non-read requests, 0 request bodies
+- frozen test used: false
+- durable smoke evidence: `docs/evidence/artifacts/b6-deployed-smoke.json`
 - durable deployment evidence: `docs/evidence/B6_CLOUDFLARE_DELIVERY.md`
 
 ## Delivery constraint evidence
@@ -131,7 +138,6 @@ The B2 production build emitted an ONNX Runtime Web WASM file at approximately 2
 
 ## Required Build evidence still outstanding
 
-- B6: deployed browser/inference/privacy smoke evidence on the live workers.dev origin.
 - B7: final validation report, supported class set, known limitations and independent negative/background phone sanity evidence.
 - Independent Critic / Integration Review as required by the active FALDEO contract before overall technical completion.
 

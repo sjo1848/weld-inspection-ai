@@ -1,6 +1,6 @@
 # B6 — Cloudflare Delivery Evidence
 
-Status: **REMOTE DEPLOY PASS / BROWSER SMOKE PENDING**
+Status: **TECHNICAL PASS**
 
 ## Deployment identity
 
@@ -47,21 +47,27 @@ v0.1 is intentionally simple:
 - no server-side image processing;
 - no image persistence.
 
-## Outstanding B6 closure evidence
+## Deployed-origin browser smoke
 
-The deployment itself and HTTP model identity are proven by the deployment execution report.
+- browser smoke: **PASS**, Playwright `1 passed`;
+- runtime: `WASM`;
+- inference: completed through the deployed production path;
+- reference partition: validation;
+- reference image: `20230612_102253_jpg.rf.4f90896f91209d67275f4a262585942e.jpg`;
+- detection count: `0`;
+- zero result: `true`;
+- runtime error: absent;
+- privacy request count: `9`;
+- non-read request count: `0`;
+- request bodies count: `0`;
+- frozen test used: `false`;
+- evidence JSON: `docs/evidence/artifacts/b6-deployed-smoke.json`;
+- screenshot: retained locally at `/tmp/b6-deployed-smoke.png`.
 
-B6 must **not** be marked TECHNICAL PASS until the public deployed origin also passes:
-1. Chromium/Playwright application smoke;
-2. runtime reports WASM and completes inference;
-3. validation image input traverses the deployed production path;
-4. zero-detection remains distinct from runtime failure;
-5. image privacy recorder observes 0 non-read requests and 0 request bodies;
-6. frozen test remains unused.
+The zero-detection result is retained as a known validation false-negative and was not used to retune thresholds, classes or the model.
 
-The reference image for this smoke must come from validation, not frozen test:
-`20230612_102253_jpg.rf.4f90896f91209d67275f4a262585942e.jpg`.
+The public smoke observed only read requests for the application, manifest, promoted ONNX and ORT WASM assets; the selected image remained local through a `blob:` URL.
 
 ## Claim boundary
 
-Remote deployment does not alter model-quality evidence. B5 already retained the same validation reference as a concrete false-negative example. B7 independent phone/negative evidence remains mandatory.
+Remote deployment does not alter model-quality evidence. B5 and B6 retain the same validation reference as a concrete false-negative example. B7 independent phone/negative evidence remains mandatory.

@@ -1,6 +1,6 @@
 # Orchestration State — WELD-VISION-001
 
-As of: 2026-09-19
+As of: 2026-09-23
 Runtime: ChatGPT / GitHub connector
 Canonical branch: `build/mvp-v0.1`
 Active Task Contract: `WV-TC-BUILD-001 — Thursday MVP Vertical Slice — ACTIVE`
@@ -16,8 +16,8 @@ Draft integration surface: PR #1
 | B3 Transfer learning candidate | **COMPLETE** | Fine-tune one bounded YOLOX-Nano baseline | 80/80 epochs + checkpoint SHA + validation evidence |
 | B4 Model promotion | **TECHNICAL PASS** | Export, parity-check and freeze task model contract | ONNX identity/hash + final manifest + Python/browser parity PASS |
 | B5 Thin client | **TECHNICAL PASS** | Implement P0 mobile journey | CI + real validation-image path + local-image privacy evidence PASS |
-| B6 Cloudflare delivery | **ACTIVE / REMOTE DEPLOY PASS / BROWSER SMOKE PENDING** | Publish static app/model/config | live workers.dev + remote ONNX identity PASS; deployed browser/privacy smoke next |
-| B7 Validate MVP | PLANNED / NEGATIVE SANITY SET REQUIRED | Execute acceptance/evaluation layers | validation report + supported class set + independent phone sanity set |
+| B6 Cloudflare delivery | **TECHNICAL PASS** | Publish static app/model/config | live workers.dev + exact remote assets + deployed browser/inference/privacy smoke PASS |
+| B7 Validate MVP | **ACTIVE / READY FOR INDEPENDENT VALIDATION** | Execute acceptance/evaluation layers | validation report + supported class set + independent phone/negative sanity set |
 
 ## Current branch and candidate identity
 
@@ -144,19 +144,11 @@ The B2 Vite build emits an ORT Web WASM runtime asset at approximately 26.8 MB, 
 - No self-approval is implied by B0/B1/B2 technical PASS evidence.
 - Project test remains frozen and must not become a tuning set.
 
-## Next authorized action
+## B6 closure and next authorized action
 
-Run the final B6 deployed-origin smoke against `https://weld-inspection-ai.sjo1848.workers.dev` using the known validation reference image `20230612_102253_jpg.rf.4f90896f91209d67275f4a262585942e.jpg`.
+B6 deployed-origin smoke completed with Chromium/Playwright PASS. The validation image completed analysis on WASM, zero-detection remained distinct from runtime failure, privacy recorded 0 non-read requests and 0 request bodies, and frozen test used = false.
 
-Required evidence:
-1. Chromium loads the public app;
-2. ORT runtime initializes as WASM;
-3. the validation image completes analysis;
-4. runtime failure and zero-detection remain distinct;
-5. 0 non-read requests and 0 request bodies are observed for the selected image;
-6. frozen test used = false.
-
-If all pass, close B6 as TECHNICAL PASS and advance to B7.
+B7 is now **ACTIVE / READY FOR INDEPENDENT VALIDATION**. Prepare, but do not execute automatically, the independent phone-image sanity set, negative/background images, domain-shift observations, supported-class behavior and known FP/FN evidence.
 
 ## Stop condition
 

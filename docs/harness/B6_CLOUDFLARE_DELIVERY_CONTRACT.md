@@ -1,9 +1,9 @@
-# WV-TC-B6-001 — Cloudflare Delivery — ACTIVE
+# WV-TC-B6-001 — Cloudflare Delivery — TECHNICAL PASS
 
 Project: WELD-VISION-001 — Weld Inspection AI — FALDEO  
 Phase: BUILD  
 Authority: HG-WV-002 Option A + WV-TC-BUILD-001  
-Status: B6 ACTIVE / REMOTE DEPLOY PASS / BROWSER SMOKE PENDING
+Status: B6 COMPLETE / TECHNICAL PASS
 
 ## 1. Purpose
 
@@ -89,4 +89,15 @@ Remote Cloudflare login and providing the exact promoted ONNX file on the deploy
 - assets published: 10
 - promoted ONNX remote identity: PASS, 3,653,900 bytes, SHA-256 `b5e980bf03113583a9a21600c3ee49a89daf2c76358fdcecf9c75db2bf7ee714`
 - runtime: WASM-only; R2/WebGPU not used
-- final closure item: deployed Chromium/inference/privacy smoke
+- deployed Chromium/inference/privacy smoke: PASS;
+- validation image remained local;
+- detection count: 0, represented as zero result rather than runtime failure;
+- privacy: 0 non-read requests and 0 request bodies;
+- frozen test used: false;
+- durable smoke evidence: `docs/evidence/artifacts/b6-deployed-smoke.json`.
+
+## 9. B6 closure
+
+B6 is **COMPLETE / TECHNICAL PASS**. The deployed browser path, exact promoted model identity, WASM runtime identity and image-privacy boundary all passed without changing the checkpoint, ONNX, thresholds or supported classes.
+
+No R2, WebGPU, server-side inference, image upload, frozen-test reuse or model retuning was used.
