@@ -1,0 +1,106 @@
+{
+  "stage": "B7_INDEPENDENT_INPUT_ACQUIRED",
+  "status": "PARTIAL_INPUT_ACQUIRED_EXECUTION_PENDING",
+  "provenance": {
+    "confirmation": "Project owner confirmed the phone photos were captured by him and are not dataset-derived.",
+    "independentFromDataset": true,
+    "rawPhotosCommitted": false,
+    "exifRetained": false
+  },
+  "target": {
+    "preferredIndependentPhotoCount": "6-12 if practical",
+    "currentIndependentCaptureCount": 4,
+    "currentSpecimenGroupCount": 2,
+    "negativeNoTargetCaseAvailable": false,
+    "note": "Multiple views of the same specimen are grouped and are not treated as independent specimens."
+  },
+  "captures": [
+    {
+      "evidenceId": "B7-PH-001",
+      "fileName": "IMG-20260831-WA0033.jpg",
+      "sha256": "e99361a564ed80c5964f6913b6addac4036f9e47021fc1e4f9b7d399ca0c5629",
+      "width": 2048,
+      "height": 1536,
+      "specimenGroup": "B7-SPEC-001",
+      "category": "supported-positive",
+      "provenance": "owner-captured phone photo",
+      "humanVisualExpectation": "Numerous small metallic droplets around the bead are visually consistent with spatter. This is a human visual expectation, not certified weld ground truth.",
+      "appExecution": "pending"
+    },
+    {
+      "evidenceId": "B7-PH-002",
+      "fileName": "IMG-20260914-WA0043.jpg",
+      "sha256": "8f2b43cd42052de7766f190eb1b49804ab17806a54fce5255c2b1e21647ccfaf",
+      "width": 1536,
+      "height": 2048,
+      "specimenGroup": "B7-SPEC-002",
+      "category": "supported-positive",
+      "provenance": "owner-captured phone photo",
+      "humanVisualExpectation": "Visible small droplets around the bead are consistent with spatter; slag-inclusion truth cannot be established from the photograph alone.",
+      "appExecution": "pending"
+    },
+    {
+      "evidenceId": "B7-PH-003",
+      "fileName": "IMG-20260914-WA0044.jpg",
+      "sha256": "cc9d75430f88c67a36903657779f4f8119c227ddad57312aa77479dccb9d781c",
+      "width": 1536,
+      "height": 2048,
+      "specimenGroup": "B7-SPEC-002",
+      "category": "supported-positive",
+      "provenance": "owner-captured phone photo",
+      "humanVisualExpectation": "Second near-frontal view of the same specimen; visible small droplets are consistent with spatter. Not an independent specimen.",
+      "appExecution": "pending"
+    },
+    {
+      "evidenceId": "B7-PH-004",
+      "fileName": "IMG-20260914-WA0045.jpg",
+      "sha256": "11ba62d449496f9e215893d887a35b53c9e13646fc80d5eb31d9e4bf5ce7d399",
+      "width": 1536,
+      "height": 2048,
+      "specimenGroup": "B7-SPEC-002",
+      "category": "unsupported-condition",
+      "provenance": "owner-captured phone photo",
+      "humanVisualExpectation": "Oblique/perspective view of the same specimen with visible spatter-like droplets; useful for domain-shift/geometry sanity evidence.",
+      "appExecution": "pending"
+    }
+  ],
+  "derivedArtifacts": [
+    {
+      "fileName": "recort.jpg",
+      "sha256": "45a4c847ba73d143beedba6e3b7c6b170a87850a9eb4f05e7639cf1c4d19eaf5",
+      "width": 741,
+      "height": 2048,
+      "role": "diagnostic crop",
+      "countsTowardIndependentTarget": false,
+      "observedManualAppResult": {
+        "detectionCount": 1,
+        "label": "spatter",
+        "confidence": 0.32,
+        "localizationAssessment": "box appears poorly localized relative to the visually obvious spatter field",
+        "caveat": "manual screenshot observation; not yet a structured B7 deployed-run record"
+      }
+    },
+    {
+      "fileName": "image(20260923-200433).png",
+      "sha256": "e3cdf6822239d30cf2c91c5e46f0e83435bc4f496e0eb6891ab05781a77ccdf1",
+      "width": 734,
+      "height": 748,
+      "role": "manual app-result screenshot",
+      "countsTowardIndependentTarget": false
+    }
+  ],
+  "frozenContract": {
+    "modelSha256": "b5e980bf03113583a9a21600c3ee49a89daf2c76358fdcecf9c75db2bf7ee714",
+    "confidenceThreshold": 0.2,
+    "nmsThreshold": 0.65,
+    "supportedClasses": [
+      "spatter",
+      "slag inclusion"
+    ],
+    "diagnosticOnlyClasses": [
+      "undercut"
+    ],
+    "frozenTestUsed": false,
+    "tuningAuthorized": false
+  }
+}
