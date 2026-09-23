@@ -1,0 +1,120 @@
+{
+  "archive_structure": {
+    "coco_json_files": 11,
+    "entries": 18001,
+    "fold_count": 5,
+    "image_files": 17990,
+    "test_images": 90,
+    "train_fold_images_each": 2864,
+    "uncompressed_bytes": 1157926436,
+    "validation_fold_images_each": 716
+  },
+  "checkpoint": "B1 canonical listing audit",
+  "evidence_inputs": {
+    "archive_listing": {
+      "sha256": "fe15a3c74dee65fcd0d4821e0b92c02a69ea00502ba82a7c4ad3cdd524fd3c9f"
+    },
+    "extracted_file_list": {
+      "sha256": "35adfa39453b1c33c24c904261c8c4ab336b6a4f647e2dd58c34716d7ddfef2a"
+    },
+    "train_fold_1_coco": {
+      "matched_archive_entry_size_bytes": 1416530,
+      "sha256": "bdb8abed1099631ead7a5bda65e0f617cd63540407ec8ed16ada35188c48530a"
+    }
+  },
+  "filename_lineage_audit": {
+    "augmentation_variants": [
+      "orig",
+      "Original",
+      "Flip_H",
+      "Flip_V",
+      "Rotate_90_CW",
+      "Rotate_90_CCW",
+      "Rotate_180",
+      "Grayscale",
+      "Color_Jitter",
+      "Blur"
+    ],
+    "base_train_tile_lineages": 358,
+    "fold_leakage": {
+      "fold_1": {
+        "shared_sources": 69,
+        "shared_tile_lineages": 329,
+        "train_sources": 70,
+        "val_sources": 69
+      },
+      "fold_2": {
+        "shared_sources": 68,
+        "shared_tile_lineages": 319,
+        "train_sources": 70,
+        "val_sources": 68
+      },
+      "fold_3": {
+        "shared_sources": 70,
+        "shared_tile_lineages": 320,
+        "train_sources": 70,
+        "val_sources": 70
+      },
+      "fold_4": {
+        "shared_sources": 70,
+        "shared_tile_lineages": 322,
+        "train_sources": 70,
+        "val_sources": 70
+      },
+      "fold_5": {
+        "shared_sources": 70,
+        "shared_tile_lineages": 314,
+        "train_sources": 70,
+        "val_sources": 70
+      }
+    },
+    "source_photo_identity_rule": "strip augmentation prefix and Roboflow _jpg.rf.<hash> suffix; retain camera basename",
+    "source_photos_total": 71,
+    "test_source_overlap_ratio": 0.9787234042553191,
+    "test_source_photos": 47,
+    "test_sources_shared_with_train": 46,
+    "train_source_photos_union": 70,
+    "variants_per_base_train_tile_per_fold_pair": 10
+  },
+  "interpretation": {
+    "published_cross_validation_is_source_independent": false,
+    "published_test_is_source_independent": false,
+    "train_fold_1_contains_true_negative_images": false,
+    "training_allowed": false
+  },
+  "open_items": [
+    "provide test/_annotations.coco.json (211785 bytes) to complete canonical 448-tile annotation counts",
+    "provide SHA-256 of the original 1.1 GB archive to pin canonical source bytes",
+    "generate project-owned source-photo-aware train/validation/test manifest",
+    "define negative/background supplementation before absence/false-positive validation"
+  ],
+  "project": "WELD-VISION-001",
+  "schema_version": 1,
+  "status": "PARTIAL_CANONICAL_EVIDENCE",
+  "train_fold_1_coco_audit": {
+    "annotations": 4545,
+    "base_tile_lineages_observed": 358,
+    "categories": {
+      "slag inclusion": 870,
+      "spatter": 2576,
+      "undercut": 1099
+    },
+    "category_multiset_consistent_within_observed_lineage_variants": true,
+    "collapsed_base_tile_annotations": {
+      "annotations": 568,
+      "categories": {
+        "slag inclusion": 107,
+        "spatter": 326,
+        "undercut": 135
+      },
+      "images": 358
+    },
+    "images": 2864,
+    "images_without_annotations": 0,
+    "placeholder_category": {
+      "annotations": 0,
+      "id": 0,
+      "name": "weld-defect-det"
+    }
+  }
+}

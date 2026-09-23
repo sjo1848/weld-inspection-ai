@@ -1,0 +1,37 @@
+import * as ort from 'onnxruntime-web/wasm'
+
+export type RuntimeProvider = 'wasm'
+export type RuntimePreference = 'auto' | 'wasm'
+
+export interface RuntimeSession {
+  session: ort.InferenceSession
+  provider: RuntimeProvider
+  warnings: string[]
+}
+
+export type RuntimeModelSource = string | Uint8Array
+
+ort.env.wasm.wasmPaths = {
+  wasm: '/assets/ort-wasm-simd-threaded.wasm',
+  mjs: '/assets/ort-wasm-simd-threaded.mjs',
+}
+
+export async function createRuntimeSession(
+  modelUrl: RuntimeModelSource,
+  _preference: RuntimePreference = 'auto',
+): Promise<RuntimeSession> {
+  const options: ort.InferenceSession.SessionOptions = {
+    executionProviders: ['wasm'],
+  }
+
+  const session =
+    typeof modelUrl === 'string'
+      ? await ort.InferenceSession.create(modelUrl, options)
+      : await ort.InferenceSession.create(modelUrl, options)
+
+  return {
+    session,
+    provider: 'wasm',
+    warnings: [],
+  }
+}

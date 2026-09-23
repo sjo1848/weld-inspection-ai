@@ -1,0 +1,64 @@
+{
+  "stage": "B6_DEPLOYED_SMOKE_COMPLETE",
+  "status": "PASS",
+  "deployUrl": "https://weld-inspection-ai.sjo1848.workers.dev",
+  "referenceImage": "weld-validation-reference.jpg",
+  "runtimeInfo": "Modelo 0.1.0Runtime WASMUmbral 0.20",
+  "detectionCount": 0,
+  "zeroResult": true,
+  "resultSummary": "3Resultado educativoNo se detectaron anomalías soportadas por encima del umbral configurado.Sin detecciones soportadas. Esto no significa que la soldadura sea aceptable, segura o libre de defectos. El modelo sólo busca las clases soportadas y puede omitir anomalías visibles. Modelo 0.1.0Runtime WASMUmbral 0.20 Nueva fotografía",
+  "privacy": {
+    "requestCount": 9,
+    "nonReadRequestCount": 0,
+    "requestBodiesCount": 0,
+    "requests": [
+      {
+        "method": "GET",
+        "url": "https://weld-inspection-ai.sjo1848.workers.dev/",
+        "postDataBytes": 0
+      },
+      {
+        "method": "GET",
+        "url": "https://weld-inspection-ai.sjo1848.workers.dev/assets/main-BuBSChMG.js",
+        "postDataBytes": 0
+      },
+      {
+        "method": "GET",
+        "url": "https://weld-inspection-ai.sjo1848.workers.dev/assets/runtime-CvaS1gq8.js",
+        "postDataBytes": 0
+      },
+      {
+        "method": "GET",
+        "url": "https://weld-inspection-ai.sjo1848.workers.dev/assets/main-CDkmXfOq.css",
+        "postDataBytes": 0
+      },
+      {
+        "method": "GET",
+        "url": "blob:https://weld-inspection-ai.sjo1848.workers.dev/b2bb4972-bee2-4ac5-b813-e82549a9e9df",
+        "postDataBytes": 0
+      },
+      {
+        "method": "GET",
+        "url": "https://weld-inspection-ai.sjo1848.workers.dev/models/model-manifest.v0.1.json",
+        "postDataBytes": 0
+      },
+      {
+        "method": "GET",
+        "url": "https://weld-inspection-ai.sjo1848.workers.dev/models/weld-yolox-nano-v0.1.onnx",
+        "postDataBytes": 0
+      },
+      {
+        "method": "GET",
+        "url": "https://weld-inspection-ai.sjo1848.workers.dev/assets/ort-wasm-simd-threaded.mjs",
+        "postDataBytes": 0
+      },
+      {
+        "method": "GET",
+        "url": "https://weld-inspection-ai.sjo1848.workers.dev/assets/ort-wasm-simd-threaded.wasm",
+        "postDataBytes": 0
+      }
+    ],
+    "conclusion": "The selected validation image remained local; no POST/PUT/PATCH request or request body was observed during deployed inference."
+  },
+  "frozenTestUsed": false
+}
