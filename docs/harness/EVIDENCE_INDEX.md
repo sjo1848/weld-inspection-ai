@@ -132,13 +132,13 @@ This proves reference-family browser portability, not welding task-model quality
 - durable smoke evidence: `docs/evidence/artifacts/b6-deployed-smoke.json`
 - durable deployment evidence: `docs/evidence/B6_CLOUDFLARE_DELIVERY.md`
 
-## Delivery constraint evidence
+## Delivery constraint evidence — resolved
 
-The B2 production build emitted an ONNX Runtime Web WASM file at approximately 26.8 MB. Current Cloudflare Workers Static Assets impose a 25 MiB per-file limit. B6 must resolve this through an evidence-backed smaller ORT build or the pre-approved R2/CDN asset seam while preserving client-side inference.
+The earlier WebGPU/JSEP-oriented runtime exceeded the Static Assets per-file ceiling. v0.1 now uses the standard ONNX Runtime Web 1.20.1 WASM-only entrypoint. The deployed WASM is 11,246,032 bytes and passes the asset-size gate; no R2/CDN seam is required.
 
 ## Required Build evidence still outstanding
 
-- B7: final validation report, supported class set, known limitations and independent negative/background phone sanity evidence.
+- B7: execute `WV-TC-B7-001` with genuinely independent phone/domain evidence, then finalize validation report, supported-class statement and known limitations.
 - Independent Critic / Integration Review as required by the active FALDEO contract before overall technical completion.
 
 ## Claim boundary
